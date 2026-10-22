@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🧠 Laboratorio de Diálogos: alert, prompt y confirm</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f8fafc;
+    --text: #0f172a;
+    --muted: #64748b;
+    --primary: #6366f1;
+    --primary-dark: #4338ca;
+    --alert-c: #3b82f6;
+    --prompt-c: #10b981;
+    --confirm-c: #f59e0b;
+    --border: #e2e8f0;
+    --card: #ffffff;
+    --success: #16a34a;
+    --error: #dc2626;
+    --code-bg: #0f172a;
+    --code-text: #e2e8f0;
+  }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.65;
+    padding-bottom: 5rem;
+  }
+  code {
+    font-family: 'SF Mono', Consolas, 'Liberation Mono', Menlo, monospace;
+    background: #eef2ff;
+    color: #4338ca;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.9em;
+  }
+  pre {
+    background: var(--code-bg);
+    color: var(--code-text);
+    padding: 1.2rem 1.4rem;
+    border-radius: 10px;
+    overflow-x: auto;
+    font-size: 0.92rem;
+    line-height: 1.55;
+    margin: 0.8rem 0;
+    border-left: 4px solid var(--primary);
+  }
+  pre code { background: none; color: inherit; padding: 0; }
+  pre .kw { color: #c792ea; font-weight: 600; }
+  pre .st { color: #c3e88d; }
+  pre .cm { color: #6b7280; font-style: italic; }
+  pre .num { color: #f78c6c; }
+
+  /* Progress */
+  .progress-wrap {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 20px;
+    display: flex; align-items: center; gap: 16px;
+  }
+  .progress-bar-bg {
+    flex: 1; height: 10px; background: #e2e8f0; border-radius: 10px; overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%; width: 0%;
+    background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899);
+    border-radius: 10px;
+    transition: width 0.5s ease;
+  }
+  .progress-label { font-size: 0.85rem; font-weight: 600; color: var(--muted); white-space: nowrap; }
+
+  /* Hero */
+  .hero {
+    padding: 110px 20px 60px;
+    background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4c1d95 100%);
+    color: white;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(circle at 20% 50%, rgba(139,92,246,0.4) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(236,72,153,0.3) 0%, transparent 50%);
+  }
+  .hero-content { position: relative; max-width: 850px; margin: 0 auto; }
+  .badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.3);
+    padding: 6px 14px;
+    border-radius: 100px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+  }
+  .hero h1 {
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    margin-bottom: 16px;
+    line-height: 1.15;
+    letter-spacing: -1px;
+  }
+  .subtitle {
+    font-size: 1.15rem;
+    opacity: 0.9;
+    margin-bottom: 28px;
+  }
+  .subtitle code {
+    background: rgba(255,255,255,0.2);
+    color: #fbbf24;
+    padding: 2px 8px;
+  }
+  .tech-pills {
+    display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
+  }
+  .tech-pills span {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    padding: 6px 14px;
+    border-radius: 100px;
+    font-size: 0.85rem;
+  }
+
+  /* Container */
+  .container { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
+
+  /* Cards */
+  .card {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 10px 30px -10px rgba(0,0,0,0.1);
+    border: 1px solid var(--border);
+  }
+  .card.module { border-top: 4px solid var(--primary); }
+  .card.alert-card { border-top-color: var(--alert-c); }
+  .card.prompt-card { border-top-color: var(--prompt-c); }
+  .card.confirm-card { border-top-color: var(--confirm-c); }
+  .card h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    display: flex; align-items: center; gap: 10px;
+    line-height: 1.3;
+  }
+  .card h3 { font-size: 1.15rem; margin: 1.5rem 0 0.6rem; color: var(--primary-dark); }
+  .card h4 { font-size: 1rem; margin: 1.2rem 0 0.5rem; }
+  .card p { margin-bottom: 0.9rem; }
+  .card ul, .card ol { padding-left: 1.5rem; margin-bottom: 1rem; }
+  .card li { margin-bottom: 0.4rem; }
+
+  .module-num {
+    display: inline-flex;
+    align-items: center; justify-content: center;
+    width: 34px; height: 34px;
+    background: var(--primary); color: white;
+    border-radius: 10px;
+    font-weight: 700; font-size: 0.95rem;
+    flex-shrink: 0;
+  }
+  .alert-card .module-num { background: var(--alert-c); }
+  .prompt-card .module-num { background: var(--prompt-c); }
+  .confirm-card .module-num { background: var(--confirm-c); }
+
+  /* Callouts */
+  .callout {
+    background: #eef2ff;
+    border-left: 4px solid var(--primary);
+    padding: 1rem 1.2rem;
+    border-radius: 8px;
+    margin: 1rem 0;
+    font-size: 0.95rem;
+  }
+  .callout.warn { background: #fef3c7; border-color: var(--confirm-c); }
+  .callout.danger { background: #fee2e2; border-color: var(--error); }
+  .callout.success { background: #dcfce7; border-color: var(--success); }
+  .callout strong { display: block; margin-bottom: 4px; }
+
+  /* Prediction */
+  .predict {
+    background: linear-gradient(135deg, #f5f3ff, #ede9fe);
+    border: 2px dashed #a78bfa;
+    border-radius: 12px;
+    padding: 1.3rem;
+    margin: 1.2rem 0;
+  }
+  .predict .tag {
+    display: inline-block;
+    background: #7c3aed; color: white;
+    padding: 3px 10px; border-radius: 100px;
+    font-size: 0.75rem; font-weight: 700;
+    letter-spacing: 0.5px;
+    margin-bottom: 10px;
+  }
+  .predict textarea {
+    width: 100%; min-height: 60px;
+    padding: 10px; border: 1.5px solid #c4b5fd;
+    border-radius: 8px; font-family: inherit;
+    font-size: 0.9rem; resize: vertical;
+    background: white;
+  }
+  .predict textarea:focus { outline: none; border-color: #7c3aed; }
+
+  /* Confidence */
+  .confidence {
+    display: flex; align-items: center; gap: 6px;
+    margin: 10px 0; flex-wrap: wrap;
+  }
+  .confidence-label { font-size: 0.85rem; color: var(--muted); margin-right: 6px; }
+  .conf-btn {
+    background: white; border: 1.5px solid #c4b5fd;
+    color: #6d28d9; width: 32px; height: 32px;
+    border-radius: 8px; cursor: pointer;
+    font-weight: 700; font-size: 0.85rem;
+    transition: all 0.2s;
+  }
+  .conf-btn:hover { background: #ede9fe; }
+  .conf-btn.active { background: #7c3aed; color: white; border-color: #7c3aed; }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 20px;
+    border: none; border-radius: 10px;
+    font-weight: 600; font-size: 0.92rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn-primary { background: var(--primary); color: white; }
+  .btn-primary:hover { background: var(--primary-dark); }
+  .btn-reveal { background: #7c3aed; color: white; }
+  .btn-reveal:hover { background: #6d28d9; }
+  .btn-demo { background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; }
+  .btn-demo:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(99,102,241,0.4); }
+  .btn-demo.alert { background: linear-gradient(135deg, #3b82f6, #06b6d4); }
+  .btn-demo.prompt { background: linear-gradient(135deg, #10b981, #14b8a6); }
+  .btn-demo.confirm { background: linear-gradient(135deg, #f59e0b, #ef4444); }
+  .btn-done {
+    background: white; color: var(--primary); border: 2px solid var(--primary);
+    padding: 10px 20px; border-radius: 10px; font-weight: 700;
+    cursor: pointer; font-family: inherit; font-size: 0.9rem;
+    transition: all 0.2s;
+  }
+  .btn-done:hover { background: var(--primary); color: white; }
+  .btn-done.done { background: var(--success); border-color: var(--success); color: white; }
+
+  /* Answer reveal */
+  .answer {
+    margin-top: 12px;
+    background: white; border: 1.5px solid #a78bfa;
+    border-radius: 10px; padding: 14px;
+    font-size: 0.95rem;
+    animation: fadeIn 0.4s ease;
+  }
+  .answer strong { color: #7c3aed; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .hidden { display: none !important; }
+
+  /* Table */
+  table {
+    width: 100%; border-collapse: collapse;
+    margin: 1rem 0; font-size: 0.92rem;
+    background: white; border-radius: 10px; overflow: hidden;
+    box-shadow: 0 0 0 1px var(--border);
+  }
+  th {
+    background: var(--primary); color: white;
+    padding: 12px; text-align: left; font-weight: 600;
+  }
+  td { padding: 12px; border-top: 1px solid var(--border); }
+  tr:nth-child(even) td { background: #f8fafc; }
+  tr:hover td { background: #eef2ff; }
+
+  /* Quiz */
+  .quiz-q {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.2rem 1.4rem;
+    margin-bottom: 1rem;
+  }
+  .quiz-q .q-text { font-weight: 600; margin-bottom: 12px; }
+  .quiz-opt {
+    display: block;
+    padding: 10px 14px;
+    background: #f8fafc;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+    font-size: 0.92rem;
+    text-align: left;
+    width: 100%;
+  }
+  .quiz-opt:hover { border-color: var(--primary); background: #eef2ff; }
+  .quiz-opt.correct { background: #dcfce7; border-color: var(--success); color: #166534; font-weight: 600; }
+  .quiz-opt.wrong { background: #fee2e2; border-color: var(--error); color: #991b1b; }
+  .quiz-opt:disabled { cursor: not-allowed; }
+  .quiz-feedback {
+    margin-top: 10px;
+    font-size: 0.9rem;
+    padding: 10px 12px;
+    border-radius: 8px;
+    display: none;
+  }
+  .quiz-feedback.show { display: block; animation: fadeIn 0.3s ease; }
+  .quiz-feedback.ok { background: #dcfce7; color: #166534; }
+  .quiz-feedback.ko { background: #fee2e2; color: #991b1b; }
+
+  /* Feynman */
+  .feynman-area {
+    width: 100%; min-height: 140px;
+    padding: 14px;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    resize: vertical;
+    line-height: 1.6;
+  }
+  .feynman-area:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
+  .word-count { font-size: 0.82rem; color: var(--muted); margin-top: 6px; text-align: right; }
+
+  /* Demo output */
+  .demo-box {
+    background: #f1f5f9;
+    border-left: 4px solid var(--primary);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 12px 0;
+    font-size: 0.92rem;
+    min-height: 40px;
+    color: var(--muted);
+    font-family: 'SF Mono', Consolas, monospace;
+  }
+  .demo-box.has-output { color: var(--text); background: #ecfdf5; border-color: var(--success); }
+
+  /* Nav dots */
+  .nav-dots {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    justify-content: center; margin: 20px 0 40px;
+  }
+  .nav-dots a {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    background: white;
+    border: 1.5px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    text-decoration: none; color: var(--muted);
+    font-weight: 700; font-size: 0.85rem;
+    transition: all 0.2s;
+  }
+  .nav-dots a:hover, .nav-dots a.completed {
+    background: var(--primary); color: white; border-color: var(--primary);
+  }
+
+  /* Footer */
+  footer {
+    text-align: center; padding: 40px 20px;
+    color: var(--muted); font-size: 0.9rem;
+    border-top: 1px solid var(--border);
+    margin-top: 40px;
+  }
+
+  @media (max-width: 600px) {
+    .card { padding: 1.4rem; }
+    .hero { padding: 100px 16px 40px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Progress Bar -->
+<div class="progress-wrap">
+  <div class="progress-bar-bg"><div class="progress-fill" id="progressFill"></div></div>
+  <div class="progress-label" id="progressLabel">0 / 9 módulos</div>
+</div>
+
+<!-- Hero -->
+<header class="hero">
+  <div class="hero-content">
+    <div class="badge">Material didáctico metacognitivo · nivel: principiante</div>
+    <h1>🧠 Laboratorio de Diálogos</h1>
+    <p class="subtitle"><code>alert</code>, <code>prompt</code> y <code>confirm</code> — aprende más rápido con ciencia del aprendizaje</p>
+    <div class="tech-pills">
+      <span>🎯 Predicción</span>
+      <span>🔁 Recuperación activa</span>
+      <span>🧩 Autoexplicación</span>
+      <span>👨‍🏫 Feynman</span>
+      <span>📅 Repaso espaciado</span>
+      <span>🔍 Análisis de errores</span>
+      <span>📈 Calibración</span>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+
+  <!-- Metacognición: cómo usar -->
+  <section class="card">
+    <h2>📖 Antes de empezar: cómo exprimir este material</h2>
+    <p>Este no es un tutorial normal. Aquí cada módulo activa una <strong>técnica metacognitiva</strong> que la investigación sobre aprendizaje ha demostrado que acelera la comprensión y la retención:</p>
+    <table>
+      <tr><th>Técnica</th><th>Qué vas a hacer</th><th>Por qué funciona</th></tr>
+      <tr><td>🎯 Predicción</td><td>Adivinar el resultado antes de verlo</td><td>Obliga al cerebro a construir un modelo y detectar el error</td></tr>
+      <tr><td>🔁 Recuperación activa</td><td>Responder preguntas sin mirar</td><td>El esfuerzo de recordar fortalece la memoria más que releer</td></tr>
+      <tr><td>🧩 Autoexplicación</td><td>Explicarte a ti mismo el "por qué"</td><td>Convierte información pasiva en conocimiento conectado</td></tr>
+      <tr><td>📈 Calibración</td><td>Valorar tu confianza antes de revelar</td><td>Detecta lo que crees saber pero no sabes</td></tr>
+      <tr><td>🔍 Análisis de errores</td><td>Descubrir bugs típicos</td><td>Evita que los repitas y consolida el modelo mental</td></tr>
+      <tr><td>👨‍🏫 Feynman</td><td>Explicarlo como si enseñaras</td><td>Enseñar es la forma más potente de aprender</td></tr>
+      <tr><td>📅 Repaso espaciado</td><td>Planificar repasos</td><td>Espaciar en el tiempo multiplica la retención</td></tr>
+    </table>
+    <div class="callout success">
+      <strong>💡 Regla de oro</strong>
+      Escribe tus predicciones <em>aunque no estés seguro</em>. El error previo a la corrección produce aprendizajes más profundos que el acierto directo.
+    </div>
+  </section>
+
+  <!-- Navigation dots -->
+  <div class="nav-dots" id="navDots"></div>
+
+  <!-- ============================================================ -->
+  <!-- MÓDULO 0: PRE-TEST (recuperación previa) -->
+  <!-- ============================================================ -->
+  <section class="card module" id="mod-0" data-module="0">
+    <h2><span class="module-num">0</span> Pre-test: lo que crees saber</h2>
+    <p>Antes de aprender, intenta responder. <strong>Aunque falles, el intento prepara tu cerebro para aprender mejor</strong> (se llama <em>efecto pretesting</em>). No hay penalización.</p>
+
+    <div class="predict">
+      <span class="tag">PREDICCIÓN 1</span>
+      <p>¿Qué devuelve <code>prompt()</code> si el usuario pulsa "Cancelar"?</p>
+      <textarea placeholder="Ej: devuelve..."></textarea>
+      <div class="confidence">
+        <span class="confidence-label">Confianza:</span>
+        <button class="conf-btn">1</button><button class="conf-btn">2</button><button class="conf-btn">3</button><button class="conf-btn">4</button><button class="conf-btn">5</button>
+      </div>
+      <button class="btn btn-reveal" onclick="reveal(this)">Ver respuesta</button>
+      <div class="answer hidden"><strong>Respuesta:</strong> devuelve <code>null</code>. Si el usuario pulsa "Aceptar" sin escribir, devuelve un string vacío <code>""</code>.</div>
+    </div>
+
+    <div class="predict">
+      <span class="tag">PREDICCIÓN 2</span>
+      <p>¿Qué tipo de dato devuelve <code>confirm()</code>?</p>
+      <textarea placeholder="Ej: devuelve..."></textarea>
+      <div class="confidence">
+        <span class="confidence-label">Confianza:</span>
+        <button class="conf-btn">1</button><button class="conf-btn">2</button><button class="conf-btn">3</button><button class="conf-btn">4</button><button class="conf-btn">5</button>
+      </div>
+      <button class="btn btn-reveal" onclick="reveal(this)">Ver respuesta</button>
+      <div class="answer hidden"><strong>Respuesta:</strong> un <strong>booleano</strong>: <code>true</code> si pulsa Aceptar, <code>false</code> si pulsa Cancelar.</div>
+    </div>
+
+    <div class="predict">
+      <span class="tag">PREDICCIÓN 3</span>
+      <p>Si el usuario escribe <code>5</code> en un <code>prompt</code> y luego haces <code>Number(x) + 3</code>, ¿qué se obtiene?</p>
+      <textarea placeholder="Ej: se obtiene..."></textarea>
+      <div class="confidence">
+        <span class="confidence-label">Confianza:</span>
+        <button class="conf-btn">1</button><button class="conf-btn">2</button><button class="conf-btn">3</button><button class="conf-btn">4</button><button class="conf-btn">5</button>
+      </div>
+      <button class="btn btn-reveal" onclick="reveal(this)">Ver respuesta</button>
+      <div class="answer hidden"><strong>Respuesta:</strong> <code>8</code>. <code>Number("5")</code> convierte el string <code>"5"</code> en el número <code>5</code>. Sin esa conversión, <code>"5" + 3</code> daría <code>"53"</code>.</div>
+    </div>
+
+    <button class="btn-done" onclick="markDone(this,0)">✓ Marcar módulo como dominado</button>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- MÓDULO 1: Qué es un diálogo modal -->
+  <!-- ============================================================ -->
+  <section class="card module" id="mod-1" data-module="1">
+    <h2><span class="module-num">1</span> ¿Qué es un diálogo modal?</h2>
+    <p>Antes de ver las funciones, necesitas un modelo mental. Un <strong>diálogo modal</strong> es una ventanita que aparece encima de la página y <strong>bloquea todo</strong> hasta que el usuario interactúa con ella.</p>
+
+    <h3>Dual coding: imagen mental + texto</h3>
+    <p>Piensa en ello como tres cajitas que el navegador te ofrece:</p>
+    <pre><code><span class="cm">// ┌──────────────────────────────────────┐</span>
+<span class="cm">// │  🪟 DIÁLOGO MODAL (bloquea la página) │</span>
+<span class="cm">// └──────────────────────────────────────┘</span>
+<span class="cm">//    │             │             │</span>
+<span class="cm">//    ▼             ▼             ▼</span>
+<span class="cm">//  alert()      prompt()     confirm()</span>
+<span class="cm">//   (salida)     (entrada)   (decisión)</span></code></pre>
+
+    <div class="callout">
+      <strong>🧩 Pregunta de elaboración</strong>
+      ¿Por qué crees que el navegador <em>bloquea</em> la página entera mientras muestra uno de estos diálogos? ¿Qué problema ocurriría si no lo hiciera?
+    </div>
+    <details>
+      <summary style="cursor:pointer;font-weight:600;color:var(--primary);">Ver razonamiento modelo</summary>
+      <p style="margin-top:10px;">Porque el script necesita <strong>el resultado</strong> del usuario para continuar. Si el código sigue ejecutándose mientras el usuario aún no ha respondido, no sabría qué hacer con la respuesta. El bloqueo <em>garantiza el orden</em> de ejecución. La desventaja: congela toda la interfaz (por eso en apps reales se usan formularios HTML + DOM, que no bloquean).</p>
+    </details>
+
+    <h3>El trío de funciones</h3>
+    <table>
+      <tr><th>Función</th><th>Propósito</th><th>Devuelve</th></tr>
+      <tr><td><code>alert(msg)</code></td><td>Mostrar información</td><td><code>undefined</code></td></tr>
+      <tr><td><code>prompt(msg, def)</code></td><td>Pedir un texto</td><td><code>string</code> | <code>""</code> | <code>null</code></td></tr>
+      <tr><td><code>confirm(msg)</code></td><td>Pedir sí/no</td><td><code>true</code> | <code>false</code></td></tr>
+    </table>
+
+    <button class="btn-done" onclick="markDone(this,1)">✓ Marcar módulo como dominado</button>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- MÓDULO 2: alert() -->
+  <!-- ============================================================ -->
+  <section class="card module alert-card" id="mod-2" data-module="2">
+    <h2><span class="module-num">2</span> 🔵 <code>alert()</code> — la salida más simple</h2>
+    <p><code>alert()</code> muestra una ventana con un mensaje y un botón "Aceptar". No devuelve nada útil (<code>undefined</code>). Es <strong>solo salida</strong>.</p>
+
+    <h3>Ejemplo 1 — básico</h3>
+    <pre><code><span class="kw">alert</span>(<span class="st">"Hola mundo"</span>);</code></pre>
+    <button class="btn btn-demo alert" onclick="demo1()">🚀 Probar alert()</button>
+
+    <h3>Ejemplo 2 — con variable</h3>
+    <pre><code><span class="kw">let</span> curso = <span class="st">"JavaScript"</span>;
+<span class="kw">alert</span>(<span class="st">"Estás aprendiendo "</span> + curso);</code></pre>
+
+    <h3>Ejemplo 3 — template literal (moderno y legible)</h3>
+    <pre><code><span class="kw">let</span> nombre = <span class="st">"Ana"</span>;
+<span class="kw">alert</span>(<span class="st">`Hola, ${nombre} 👋`</span>);</code></pre>
+
+    <div class="callout warn">
+      <strong>⚠️ Buena práctica</strong>
+      <code>alert()</code> es perfecto para <strong>aprender y depurar</strong>, pero no para producción: bloquea la página y no se puede estilizar. En apps reales se usa <code>console.log()</code> para depurar y elementos del DOM para mostrar mensajes.
+    </div>
+
+    <!-- Predicción -->
+    <div class="predict">
+      <span class="tag">PREDICCIÓN · ALERT</span>
+      <p>¿Qué mostrará exactamente este código?</p>
+      <pre><code><span class="kw">let</span> a = <span class="num">2</span>;
+<span class="kw">alert</span>(<span class="st">"Valor: "</span> + a + <span class="num">1</span>);</code></pre>
+      <textarea placeholder="Escribe tu predicción..."></textarea>
+      <div class="confidence">
+        <span class="confidence-label">Confianza:</span>
+        <button class="conf-btn">1</button><button class="conf-btn">2</button><button class="conf-btn">3</button><button class="conf-btn">4</button><button class="conf-btn">5</button>
+      </div>
+      <button class="btn btn-reveal" onclick="reveal(this)">Ver respuesta</button>
+      <div class="answer hidden">
+        <strong>Respuesta:</strong> <code>"Valor: 21"</code>.<br>
+        <em>¿Por qué?</em> Primero <code>"Valor: " + 2</code> produce <code>"Valor: 2"</code> (string). Luego <code>"Valor: 2" + 1</code> produce <code>"Valor: 21"</code> — el <code>+</code> con un string <strong>concatena</strong>, no suma.
+        <br><br><strong>🧩 Autoexplicación:</strong> escribe con tus palabras por qué <code>a + 1</code> dentro de un <code>alert</code> con string delante no suma.
+      </div>
+    </div>
+
+    <button class="btn-done" onclick="markDone(this,2)">✓ Marcar módulo como dominado</button>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- MÓDULO 3: prompt() -->
+  <!-- ============================================================ -->
+  <section class="card module prompt-card" id="mod-3" data-module="3">
+    <h2><span class="module-num">3</span> 🟢 <code>prompt()</code> — pedir datos al usuario</h2>
+    <p><code>prompt()</code> muestra una ventana con un campo de texto. El usuario puede escribir, aceptar o cancelar. <strong>Siempre devuelve un string</strong> (o <code>null</code> si cancela).</p>
+
+    <h3>Sintaxis</h3>
+    <pre><code><span class="kw">prompt</span>(mensaje, valorPorDefecto);</code></pre>
+    <p>El segundo parámetro es opcional. Si lo pones, aparece ya escrito en la caja.</p>
+
+    <h3>Comportamiento exacto</h3>
+    <table>
+      <tr><th>Acción del usuario</th><th>Devuelve</th><th>Tipo</th></tr>
+      <tr><td>Escribe algo y pulsa Aceptar</td><td><code>"su texto"</code></td><td>string</td></tr>
+      <tr><td>Acepta sin escribir nada</td><td><code>""</code> (string vacío)</td><td>string</td></tr>
+      <tr><td>Pulsa Cancelar / Esc</td><td><code>null</code></td><td>null</td></tr>
+    </table>
+
+    <h3>Ejemplo 1 — básico</h3>
+    <pre><code><span class="kw">let</span> nombre = <span class="kw">prompt</span>(<span class="st">"¿Cómo te llamas?"</span>);
+<span class="kw">alert</span>(<span class="st">"Hola, "</span> + nombre);</code></pre>
+    <button class="btn btn-demo prompt" onclick="demo2()">🚀 Probar prompt + alert</button>
+
+    <h3>Ejemplo 2 — con valor por defecto</h3>
+    <pre><code><span class="kw">let</span> ciudad = <span class="kw">prompt</span>(<span class="st">"¿Dónde vives?"</span>, <span class="st">"Madrid"</span>);</code></pre>
+
+    <h3>Ejemplo 3 — ¡el error clásico!</h3>
+    <pre><code><span class="kw">let</span> a = <span class="kw">prompt</span>(<span class="st">"Primer número"</span>);   <span class="cm">// "5"  ← string</span>
+<span class="kw">let</span> b = <span class="kw">prompt</span>(<span class="st">"Segundo número"</span>);  <span class="cm">// "3"  ← string</span>
+<span class="kw">alert</span>(a + b);                              <span class="cm">// "53" ❌ no es 8</span></code></pre>
+
+    <h3>Ejemplo 4 — conversión a número</h3>
+    <pre><code><span class="kw">let</span> a = <span class="kw">Number</span>(<span class="kw">prompt</span>(<span class="st">"Primer número"</span>));
+<span class="kw">let</span> b = <span class="kw">Number</span>(<span class="kw">prompt</span>(<span class="st">"Segundo número"</span>));
+<span class="kw">alert</span>(a + b);   <span class="cm">// 8 ✅</span></code></pre>
+
+    <h3>Ejemplo 5 — validación (nivel avanzado)</h3>
+    <pre><code><span class="kw">let</span> entrada = <span class="kw">prompt</span>(<span class="st">"Dime tu edad"</span>);
+
+<span class="kw">if</span> (entrada === <span class="kw">null</span>) {
+  <span class="kw">alert</span>(<span class="st">"Cancelaste"</span>);
+} <span class="kw">else if</span> (entrada.trim() === <span class="st">""</span>) {
+  <span class="kw">alert</span>(<span class="st">"No escribiste nada"</span>);
+} <span class="kw">else if</span> (<span class="kw">isNaN</span>(<span class="kw">Number</span>(entrada))) {
+  <span class="kw">alert</span>(<span class="st">"No es un número válido"</span>);
+} <span class="kw">else</span> {
+  <span class="kw">alert</span>(<span class="st">`Tienes ${entrada} años`</span>);
+}</code></pre>
+
+    <div class="callout danger">
+      <strong>🚨 Error típico</strong>
+      Hacer <code>nombre.toUpperCase()</code> cuando <code>nombre</code> puede ser <code>null</code> romperá el script con <em>"Cannot read properties of null"</em>. <strong>Siempre</strong> valida el <code>null</code> antes de operar.
+    </div>
+
+    <!-- Predicción -->
+    <div class="predict">
+      <span class="tag">PREDICCIÓN · PROMPT</span>
+      <p>El usuario escribe <code>7</code> en el primer prompt y <code>2</code> en el segundo. ¿Qué mostrará el alert?</p>
+      <pre><code><span class="kw">let</span> a = <span class="kw">prompt</span>(<span class="st">"a"</span>);
+<span class="kw">let</span> b = <span class="kw">prompt</span>(<span class="st">"b"</span>);
+<span class="kw">alert</span>(a * b);</code></pre>
+      <textarea placeholder="Escribe tu predicción..."></textarea>
+      <div class="confidence">
+        <span class="confidence-label">Confianza:</span>
+        <button class="conf-btn">1</button><button class="conf-btn">2</button><button class="conf-btn">3</button><button class="conf-btn">4</button><button class="conf-btn">5</button>
+      </div>
+      <button class="btn btn-reveal" onclick="reveal(this)">Ver respuesta</button>
+      <div class="answer hidden">
+        <strong>Respuesta:</strong> <code>14</code>.<br>
+        El operador <code>*</code> <strong>convierte automáticamente</strong> los strings numéricos a números. <code>"7" * "2"</code> → <code>14</code>. <br><br>
+        <strong>Pero ojo:</strong> el <code>+</code> NO hace esto (concatena). Es la gran trampa del <code>+</code> en JS. 🧩 ¿Puedes explicar la diferencia entre <code>+</code> y <code>*</code> en una frase?
+      </div>
+    </div>
+
+    <button class="btn-done" onclick="markDone(this,3)">✓ Marcar módulo como dominado</button>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- MÓDULO 4: confirm() -->
+  <!-- ============================================================ -->
+  <section class="card module confirm-card" id="mod-4" data-module="4">
+    <h2><span class="module-num">4</span> 🟠 <code>confirm()</code> — pedir una decisión</h2>
+    <p><code>confirm()</code> muestra un mensaje con <strong>dos botones</strong>: Aceptar y Cancelar. Devuelve un <strong>booleano</strong>: <code>true</code> (Aceptar) o <code>false</code> (Cancelar / Esc).</p>
+
+    <h3>Comportamiento exacto</h3>
+    <table>
+      <tr><th>Acción del usuario</th><th>Devuelve</th></tr>
+      <tr><td>Pulsa Aceptar</td><td><code>true</code></td></tr>
+      <tr><td>Pulsa Cancelar / Esc</td><td><code>false</code></td></tr>
+    </table>
+
+    <h3>Ejemplo 1 — básico</h3>
+    <pre><code><span class="kw">let</span> respuesta = <span class="kw">confirm</span>(<span class="st">"¿Seguro que quieres continuar?"</span>);
+
+<span class="kw">if</span> (respuesta) {
+  <span class="kw">alert</span>(<span class="st">"Continuamos ✅"</span>);
+} <span class="kw">else</span> {
+  <span class="kw">alert</span>(<span class="st">"Cancelado ❌"</span>);
+}</code></pre>
+    <button class="btn btn-demo confirm" onclick="demo3()">🚀 Probar confirm()</button>
+
+    <h3>Ejemplo 2 — directo (más compacto)</h3>
+    <pre><code><span class="kw">if</span> (<span class="kw">confirm</span>(<span class="st">"¿Eliminar el archivo?"</span>)) {
+  <span class="kw">alert</span>(<span class="st">"Borrado"</span>);
+}</code></pre>
+
+    <div class="callout warn">
+      <strong>⚠️ Error común</strong>
+      <code>if (confirm("...") === "true")</code> ❌ — compara un booleano con un string, siempre da <code>false</code>. <code>confirm</code> ya devuelve un booleano, no lo compares con texto.
+    </div>
+
+    <div class="callout">
+      <strong>🧩 Elaboración</strong>
+      ¿Por qué <code>confirm()</code> no necesita un valor por defecto como <code>prompt()</code>? Pista: ¿cuántos tipos de respuesta puede dar el usuario?
+    </div>
+
+    <div class="predict">
+      <span class="tag">PREDICCIÓN · CONFIRM</span>
+      <p>El usuario pulsa <strong>Cancelar</strong>. ¿Qué se muestra?</p>
+      <pre><code><span class="kw">if</span> (<span class="kw">confirm</span>(<span class="st">"¿Sí?"</span>) === <span class="st">"true"</span>) {
+  <span class="kw">alert</span>(<span class="st">"A"</span>);
+} <span class="kw">else</span> {
+  <span class="kw">alert</span>(<span class="st">"B"</span>);
+}</code></pre>
+      <textarea placeholder="Escribe tu predicción..."></textarea>
+      <div class="confidence">
+        <span class="confidence-label">Confianza:</span>
+        <button class="conf-btn">1</button><button class="conf-btn">2</button><button class="conf-btn">3</button><button class="conf-btn">4</button><button class="conf-btn">5</button>
+      </div>
+      <button class="btn btn-reveal" onclick="reveal(this)">Ver respuesta</button>
+      <div class="answer hidden">
+        <strong>Respuesta:</strong> <code>"B"</code>.<br>
+        <em>Y aunque hubiera pulsado Aceptar, también saldría <code>"B"</code></em>, porque <code>true === "true"</code> es <code>false</code>. Comparar booleano con string es un bug clásico. La forma correcta sería simplemente <code>if (confirm("¿Sí?"))</code>.
+      </div>
+    </div>
+
+    <button class="btn-done" onclick="markDone(this,4)">✓ Marcar módulo como dominado</button>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- MÓDULO 5: Combinación -->
+  <!-- ============================================================ -->
+  <section class="card module" id="mod-5" data-module="5">
+    <h2><span class="module-num">5</span> 🧩 Combinando las tres funciones</h2>
+    <p>Ejemplo completo con flujo real: pedir datos → validar → confirmar → mostrar resultado.</p>
+
+    <pre><code><span class="cm">// 1. ENTRADA</span>
+<span class="kw">let</span> nombre = <span class="kw">prompt</span>(<span class="st">"¿Cómo te llamas?"</span>);
+
+<span class="cm">// 2. VALIDAR</span>
+<span class="kw">if</span> (nombre === <span class="kw">null</span> || nombre.trim() === <span class="st">""</span>) {
+  <span class="kw">alert</span>(<span class="st">"No escribiste un nombre."</span>);
+} <span class="kw">else</span> {
+  <span class="cm">// 3. CONFIRMAR</span>
+  <span class="kw">let</span> ok = <span class="kw">confirm</span>(<span class="st">`¿Confirmas que te llamas "${nombre}"?`</span>);
+
+  <span class="cm">// 4. MOSTRAR</span>
+  <span class="kw">if</span> (ok) {
+    <span class="kw">alert</span>(<span class="st">`¡Bienvenido, ${nombre}! 🎉`</span>);
+  } <span class="kw">else</span> {
+    <span class="kw">alert</span>(<span class="st">"Vale, no guardaré ese nombre."</span>);
+  }
+}</code></pre>
+
+    <button class="btn btn-demo" onclick="demo4()">🚀 Ejecutar el ejemplo completo</button>
+
+    <div class="callout success">
+      <strong>💡 Patrón mental</strong>
+      <code>prompt</code> → validar → <code>confirm</code> → <code>alert</code>. Memoriza este patrón: lo usarás constantemente al aprender.
+    </div>
+
+    <button class="btn-done" onclick="markDone(this,5)">✓ Marcar módulo como dominado</button>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- MÓDULO 6: Análisis de errores -->
+  <!-- ============================================================ -->
+  <section class="card module" id="mod-6" data-module="6">
+    <h2><span class="module-num">6</span> 🔍 Análisis de errores (aprende de los bugs)</h2>
+    <p>Detectar errores en código ajeno es una de las técnicas <strong>más potentes</strong> para construir un modelo mental robusto. Lee cada caso e identifica el bug <em>antes</em> de revelar la respuesta.</p>
+
+    <div class="predict">
+      <span class="tag">BUG 1</span>
+      <pre><code><span class="kw">let</span> a = <span class="kw">prompt</span>(<span class="st">"num1"</span>);
+<span class="kw">let</span> b = <span class="kw">prompt</span>(<span class="st">"num2"</span>);
+<span class="kw">alert</span>(a + b);</code></pre>
+      <p><strong>El usuario escribe 5 y 3. Muestra "53". ¿Por qué está mal y cómo se arregla?</strong></p>
+      <textarea placeholder="Explica el bug y propón la corrección..."></textarea>
+      <button class="btn btn-reveal" onclick="reveal(this)">Ver solución</button>
+      <div class="answer hidden">
+        <strong>Bug:</strong> <code>prompt</code> devuelve strings, así que <code>"5" + "3"</code> concatena → <code>"53"</code>.<br>
+        <strong>Fix:</strong> <code>Number(prompt("num1")) + Number(prompt("num2"))</code>.
+      </div>
+    </div>
+
+    <div class="predict">
+      <span class="tag">BUG 2</span>
+      <pre><code><span class="kw">let</span> nombre = <span class="kw">prompt</span>(<span class="st">"Tu nombre:"</span>);
+<span class="kw">alert</span>(nombre.toUpperCase());</code></pre>
+      <p><strong>Funciona bien si el usuario escribe. ¿Qué pasa si pulsa Cancelar?</strong></p>
+      <textarea placeholder="Explica el fallo..."></textarea>
+      <button class="btn btn-reveal" onclick="reveal(this)">Ver solución</button>
+      <div class="answer hidden">
+        <strong>Bug:</strong> al cancelar, <code>nombre</code> vale <code>null</code>. Llamar <code>null.toUpperCase()</code> lanza <em>TypeError: Cannot read properties of null</em> y detiene el script.<br>
+        <strong>Fix:</strong> <code>if (nombre) alert(nombre.toUpperCase());</code> (un <code>null</code> es <em>falsy</em>).
+      </div>
+    </div>
+
+    <div class="predict">
+      <span class="tag">BUG 3</span>
+      <pre><code><span class="kw">if</span> (<span class="kw">confirm</span>(<span class="st">"¿Borrar?"</span>) === <span class="st">"true"</span>) {
+  <span class="kw">alert</span>(<span class="st">"Borrado"</span>);
+}</code></pre>
+      <p><strong>El alert "Borrado" nunca se muestra, aunque el usuario pulse Aceptar. ¿Por qué?</strong></p>
+      <textarea placeholder="Explica el fallo..."></textarea>
+      <button class="btn btn-reveal" onclick="reveal(this)">Ver solución</button>
+      <div class="answer hidden">
+        <strong>Bug:</strong> <code>confirm</code> devuelve el booleano <code>true</code>, no el string <code>"true"</code>. La comparación <code>true === "true"</code> es <code>false</code>.<br>
+        <strong>Fix:</strong> <code>if (confirm("¿Borrar?"))</code>.
+      </div>
+    </div>
+
+    <button class="btn-done" onclick="markDone(this,6)">✓ Marcar módulo como dominado</button>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- MÓDULO 7: Quiz de transferencia -->
+  <!-- ============================================================ -->
+  <section class="card module" id="mod-7" data-module="7">
+    <h2><span class="module-num">7</span> 🎯 Quiz de transferencia</h2>
+    <p>Responde <strong>sin mirar atrás</strong>. Cada respuesta te da feedback inmediato. El objetivo es transferir lo aprendido a situaciones nuevas.</p>
+    <div id="quizContainer"></div>
+    <div id="quizScore" style="margin-top:1rem;font-weight:700;font-size:1.05rem;"></div>
+    <button class="btn-done" onclick="markDone(this,7)" style="margin-top:1rem;">✓ Marcar módulo como dominado</button>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- MÓDULO 8: Feynman + repaso espaciado -->
+  <!-- ============================================================ -->
+  <section class="card module" id="mod-8" data-module="8">
+    <h2><span class="module-num">8</span> 👨‍🏫 Técnica Feynman + repaso espaciado</h2>
+
+    <h3>Paso 1 — Explícalo como si tuvieras 12 años</h3>
+    <p>Escribe con tus propias palabras qué hacen <code>alert</code>, <code>prompt</code> y <code>confirm</code>. Sin copiar. Sin mirar arriba. Si te trabas en algo, ¡esa es exactamente la parte que necesitas repasar!</p>
+    <textarea class="feynman-area" id="feynmanText" placeholder="Alert sirve para... prompt sirve para... confirm sirve para... La diferencia más importante entre ellas es... Un error típico es..."></textarea>
+    <div class="word-count" id="wordCount">0 palabras</div>
+
+    <div class="callout">
+      <strong>🧩 Autoexplicación final</strong>
+      Cierra los ojos y responde mentalmente: <em>Si tuviera que darle a alguien una sola frase para recordar la diferencia entre las tres funciones, ¿cuál sería?</em>
+    </div>
+
+    <h3>Paso 2 — Plan de repaso espaciado</h3>
+    <p>La curva del olvido actúa rápido. Marca en tu calendario estos repasos breves (5 minutos basta):</p>
+    <ul>
+      <li><strong>Hoy:</strong> rehaz un ejemplo completo de memoria.</li>
+      <li><strong>Mañana:</strong> vuelve al Módulo 3 y haz las predicciones sin mirar respuestas.</li>
+      <li><strong>En 3 días:</strong> repite el quiz del Módulo 7.</li>
+      <li><strong>En 1 semana:</strong> escribe el patrón <code>prompt → validar → confirm → alert</code> en papel.</li>
+      <li><strong>En 2 semanas:</strong> crea tu propio mini proyecto (ej. una calculadora con diálogos).</li>
+    </ul>
+
+    <div class="callout success">
+      <strong>🚀 Próximo paso natural</strong>
+      En cuanto domines estos tres diálogos, aprende a reemplazarlos por <strong>formularios HTML + <code>addEventListener</code></strong>. Es lo que se usa en aplicaciones reales: no bloquean, se pueden estilizar y son accesibles.
+    </div>
+
+    <button class="btn-done" onclick="markDone(this,8)">✓ Marcar módulo como dominado</button>
+  </section>
+
+</main>
+
+<footer>
+  Hecho con 🧠 metacognición · Predicción · Recuperación activa · Feynman · Repaso espaciado
+</footer>
+
+<script>
+/* ============================================================
+   UTILIDADES
+   ============================================================ */
+function highlightJS(code) {
+  const tokens = [];
+  code = code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  code = code.replace(/(`[^`]*`|"[^"]*"|'[^']*')/g, (m) => {
+    tokens.push('<span class="st">' + m + '</span>');
+    return '§' + (tokens.length - 1) + '§';
+  });
+  code = code.replace(/(\/\/[^\n]*)/g, (m) => {
+    tokens.push('<span class="cm">' + m + '</span>');
+    return '§' + (tokens.length - 1) + '§';
+  });
+  code = code.replace(/\b(let|const|var|if|else|function|return|new|typeof|true|false|null|undefined|NaN|prompt|alert|confirm|Number|parseInt|parseFloat|console|isNaN|trim|toUpperCase)\b/g, '<span class="kw">$1</span>');
+  code = code.replace(/§(\d+)§/g, (m, i) => tokens[+i]);
+  return code;
+}
+
+document.querySelectorAll('pre code').forEach(el => {
+  const raw = el.textContent;
+  el.innerHTML = highlightJS(raw);
+});
+
+/* ============================================================
+   REVEAL ANSWERS
+   ============================================================ */
+function reveal(btn) {
+  const parent = btn.closest('.predict');
+  const answer = parent.querySelector('.answer');
+  answer.classList.toggle('hidden');
+  btn.textContent = answer.classList.contains('hidden')
+    ? 'Ver respuesta'
+    : 'Ocultar respuesta';
+}
+
+/* ============================================================
+   CONFIDENCE BUTTONS
+   ============================================================ */
+document.querySelectorAll('.confidence').forEach(group => {
+  group.querySelectorAll('.conf-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      group.querySelectorAll('.conf-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+});
+
+/* ============================================================
+   DEMO FUNCTIONS
+   ============================================================ */
+function demo1() {
+  alert("Hola mundo 👋");
+}
+function demo2() {
+  let nombre = prompt("¿Cómo te llamas?");
+  if (nombre === null) {
+    alert("Cancelaste 😅");
+  } else if (nombre.trim() === "") {
+    alert("No escribiste nada 😶");
+  } else {
+    alert("Hola, " + nombre + " 👋");
+  }
+}
+function demo3() {
+  let respuesta = confirm("¿Seguro que quieres continuar?");
+  if (respuesta) {
+    alert("Continuamos ✅");
+  } else {
+    alert("Cancelado ❌");
+  }
+}
+function demo4() {
+  let nombre = prompt("¿Cómo te llamas?");
+  if (nombre === null || nombre.trim() === "") {
+    alert("No escribiste un nombre.");
+  } else {
+    let ok = confirm('¿Confirmas que te llamas "' + nombre + '"?');
+    if (ok) {
+      alert("¡Bienvenido, " + nombre + "! 🎉");
+    } else {
+      alert("Vale, no guardaré ese nombre.");
+    }
+  }
+}
+
+/* ============================================================
+   PROGRESS TRACKING
+   ============================================================ */
+const TOTAL = 9;
+function getProgress() {
+  try {
+    return JSON.parse(localStorage.getItem('progreso_dialogos') || '[]');
+  } catch { return []; }
+}
+function saveProgress(arr) {
+  try { localStorage.setItem('progreso_dialogos', JSON.stringify(arr)); } catch {}
+}
+function markDone(btn, idx) {
+  let done = getProgress();
+  if (done.includes(idx)) {
+    done = done.filter(i => i !== idx);
+  } else {
+    done.push(idx);
+  }
+  saveProgress(done);
+  renderProgress();
+}
+function renderProgress() {
+  const done = getProgress();
+  const pct = (done.length / TOTAL) * 100;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressLabel').textContent = done.length + ' / ' + TOTAL + ' módulos';
+
+  document.querySelectorAll('.btn-done').forEach(btn => {
+    const mod = btn.closest('[data-module]');
+    if (!mod) return;
+    const idx = parseInt(mod.dataset.module);
+    if (done.includes(idx)) {
+      btn.classList.add('done');
+      btn.textContent = '✓ Módulo dominado';
+    } else {
+      btn.classList.remove('done');
+      btn.textContent = '✓ Marcar módulo como dominado';
+    }
+  });
+
+  document.querySelectorAll('.nav-dots a').forEach(a => {
+    const idx = parseInt(a.dataset.idx);
+    a.classList.toggle('completed', done.includes(idx));
+  });
+}
+
+/* Nav dots */
+(function buildNavDots() {
+  const dots = document.getElementById('navDots');
+  for (let i = 0; i < TOTAL; i++) {
+    const a = document.createElement('a');
+    a.href = '#mod-' + i;
+    a.textContent = i;
+    a.dataset.idx = i;
+    dots.appendChild(a);
+  }
+})();
+
+/* ============================================================
+   QUIZ
+   ============================================================ */
+const QUIZ = [
+  {
+    q: '¿Qué devuelve prompt() si el usuario pulsa Cancelar?',
+    opts: ['""', 'false', 'null', 'undefined'],
+    correct: 2,
+    why: 'prompt devuelve null al cancelar, "" si acepta sin escribir, o el string escrito.'
+  },
+  {
+    q: '¿Qué devuelve alert("hola")?',
+    opts: ['"hola"', 'true', 'undefined', 'null'],
+    correct: 2,
+    why: 'alert no devuelve nada útil; en JavaScript eso es undefined.'
+  },
+  {
+    q: 'let n = prompt("n"); alert(n + 5); — el usuario escribe 10. ¿Qué muestra?',
+    opts: ['15', '"105"', '"15"', 'NaN'],
+    correct: 1,
+    why: 'prompt devuelve "10" (string). "10" + 5 concatena → "105". Haría falta Number().'
+  },
+  {
+    q: '¿Cuál es la forma correcta de preguntar "¿Deseas continuar?"',
+    opts: ['alert("¿Deseas continuar?")', 'prompt("¿Deseas continuar?")', 'confirm("¿Deseas continuar?")', 'console.log("¿Deseas continuar?")'],
+    correct: 2,
+    why: 'confirm es la función diseñada para preguntas de sí/no; devuelve true/false.'
+  },
+  {
+    q: 'let x = Number(prompt("dato")); — el usuario escribe "hola". ¿Qué vale x?',
+    opts: ['"hola"', '0', 'null', 'NaN'],
+    correct: 3,
+    why: 'Number("hola") da NaN (Not a Number). Para validar: isNaN(x) es true.'
+  },
+  {
+    q: '¿Qué función usarías para mostrar un mensaje informativo?',
+    opts: ['prompt()', 'confirm()', 'alert()', 'parseInt()'],
+    correct: 2,
+    why: 'alert solo muestra información y devuelve undefined.'
+  },
+  {
+    q: 'if (confirm("¿Sí?") === true) { ... } — ¿Es correcta esta comparación?',
+    opts: ['Sí, es la única forma', 'No, confirm() ya devuelve un booleano, basta if (confirm(...))', 'Solo funciona en modo estricto', 'Da error de sintaxis'],
+    correct: 1,
+    why: 'confirm ya devuelve true/false. Comparar con === true funciona pero es redundante; lo erróneo es comparar con el string "true".'
+  }
+];
+
+let quizAnswered = 0;
+let quizCorrect = 0;
+
+(function renderQuiz() {
+  const container = document.getElementById('quizContainer');
+  QUIZ.forEach((item, i) => {
+    const div = document.createElement('div');
+    div.className = 'quiz-q';
+    div.innerHTML = `
+      <div class="q-text">${i + 1}. ${item.q}</div>
+      <div class="opts"></div>
+      <div class="quiz-feedback"></div>
+    `;
+    const optsDiv = div.querySelector('.opts');
+    item.opts.forEach((opt, j) => {
+      const b = document.createElement('button');
+      b.className = 'quiz-opt';
+      b.textContent = opt;
+      b.addEventListener('click', () => {
+        if (div.dataset.answered) return;
+        div.dataset.answered = '1';
+        quizAnswered++;
+        const feedback = div.querySelector('.quiz-feedback');
+        optsDiv.querySelectorAll('button').forEach(x => x.disabled = true);
+        if (j === item.correct) {
+          b.classList.add('correct');
+          quizCorrect++;
+          feedback.className = 'quiz-feedback ok show';
+          feedback.innerHTML = '✅ ¡Correcto! ' + item.why;
+        } else {
+          b.classList.add('wrong');
+          optsDiv.querySelectorAll('button')[item.correct].classList.add('correct');
+          feedback.className = 'quiz-feedback ko show';
+          feedback.innerHTML = '❌ Incorrecto. ' + item.why;
+        }
+        updateQuizScore();
+      });
+      optsDiv.appendChild(b);
+    });
+    container.appendChild(div);
+  });
+})();
+
+function updateQuizScore() {
+  const el = document.getElementById('quizScore');
+  if (quizAnswered === 0) { el.textContent = ''; return; }
+  el.textContent = `Aciertos: ${quizCorrect} / ${QUIZ.length} (respondidas: ${quizAnswered}/${QUIZ.length})`;
+  if (quizAnswered === QUIZ.length) {
+    if (quizCorrect === QUIZ.length) {
+      el.textContent += ' 🏆 ¡Perfecto! Dominas el tema.';
+      el.style.color = 'var(--success)';
+    } else if (quizCorrect >= QUIZ.length * 0.7) {
+      el.textContent += ' 💪 Muy bien. Repasa los fallos.';
+      el.style.color = 'var(--primary)';
+    } else {
+      el.textContent += ' 📚 Repasa los módulos 2, 3 y 4 antes de continuar.';
+      el.style.color = 'var(--error)';
+    }
+  }
+}
+
+/* ============================================================
+   FEYNMAN WORD COUNTER
+   ============================================================ */
+const feyn = document.getElementById('feynmanText');
+const wc = document.getElementById('wordCount');
+feyn.addEventListener('input', () => {
+  const words = feyn.value.trim().split(/\s+/).filter(Boolean).length;
+  wc.textContent = words + ' palabras' + (words < 40 ? ' (¡intenta llegar a 40+)' : ' ✓');
+  wc.style.color = words >= 40 ? 'var(--success)' : 'var(--muted)';
+});
+
+/* ============================================================
+   INIT
+   ============================================================ */
+renderProgress();
+</script>
+</body>
+</html>
