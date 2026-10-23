@@ -1,0 +1,1434 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cuaderno PDF · alert, prompt, confirm — con ejercicios</title>
+<style>
+  /* ============================================================
+     ESTILOS DE PANTALLA + IMPRESIÓN
+     ============================================================ */
+  * { box-sizing: border-box; }
+  :root {
+    --ink: #111827;
+    --muted: #4b5563;
+    --primary: #4338ca;
+    --primary-soft: #eef2ff;
+    --border: #d1d5db;
+    --line: #cbd5e1;
+    --soft: #f8fafc;
+    --warn: #b45309;
+    --warn-bg: #fffbeb;
+    --good: #047857;
+    --good-bg: #ecfdf5;
+  }
+
+  body {
+    font-family: Georgia, 'Times New Roman', serif;
+    color: var(--ink);
+    background: #e5e7eb;
+    margin: 0;
+    line-height: 1.55;
+    font-size: 11pt;
+  }
+
+  code, pre, .mono {
+    font-family: 'SF Mono', 'Courier New', Consolas, monospace;
+  }
+
+  /* ---- Botón flotante (solo pantalla) ---- */
+  .print-fab {
+    position: fixed;
+    top: 16px; right: 16px;
+    z-index: 999;
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 12px 18px;
+    border-radius: 10px;
+    font-family: system-ui, sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 6px 20px rgba(67,56,202,0.35);
+  }
+  .print-fab:hover { background: #3730a3; }
+
+  .hint-screen {
+    position: fixed;
+    bottom: 16px; right: 16px;
+    z-index: 999;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-family: system-ui, sans-serif;
+    font-size: 12px;
+    color: var(--muted);
+    max-width: 260px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  }
+
+  /* ---- Estructura de la hoja ---- */
+  .page {
+    background: white;
+    width: 210mm;
+    min-height: 297mm;
+    margin: 12px auto;
+    padding: 20mm 18mm;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.12);
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* ---- Tipografía ---- */
+  h1 { font-size: 26pt; line-height: 1.1; margin: 0 0 10px; letter-spacing: -0.5px; }
+  h2 { font-size: 15pt; margin: 0 0 8px; color: var(--primary); border-bottom: 2px solid var(--primary); padding-bottom: 4px; }
+  h3 { font-size: 12pt; margin: 14px 0 6px; color: #1e1b4b; }
+  h4 { font-size: 11pt; margin: 10px 0 4px; }
+  p  { margin: 0 0 8px; }
+  ul, ol { margin: 6px 0 10px; padding-left: 22px; }
+  li { margin-bottom: 3px; }
+  small { color: var(--muted); font-size: 9.5pt; }
+
+  /* ---- Código ---- */
+  pre {
+    background: var(--soft);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--primary);
+    border-radius: 4px;
+    padding: 8px 12px;
+    font-size: 9.5pt;
+    line-height: 1.4;
+    overflow-x: auto;
+    margin: 6px 0 8px;
+    break-inside: avoid;
+    color: #0f172a;
+  }
+  code {
+    background: var(--primary-soft);
+    color: var(--primary);
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 9.5pt;
+  }
+  pre code { background: none; color: inherit; padding: 0; }
+  .kw { color: #7c3aed; font-weight: 600; }
+  .st { color: #059669; }
+  .cm { color: #6b7280; font-style: italic; }
+  .num { color: #dc2626; }
+
+  /* ---- Callouts ---- */
+  .callout {
+    background: var(--primary-soft);
+    border-left: 3px solid var(--primary);
+    padding: 8px 12px;
+    border-radius: 3px;
+    font-size: 10pt;
+    margin: 8px 0;
+    break-inside: avoid;
+  }
+  .callout.warn { background: var(--warn-bg); border-color: var(--warn); }
+  .callout.good { background: var(--good-bg); border-color: var(--good); }
+  .callout strong { display: block; margin-bottom: 2px; }
+
+  /* ---- Tablas ---- */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 10pt;
+    margin: 8px 0 10px;
+    break-inside: avoid;
+  }
+  th {
+    background: var(--primary-soft);
+    border: 1px solid var(--border);
+    padding: 6px 8px;
+    text-align: left;
+    font-weight: 700;
+  }
+  td {
+    border: 1px solid var(--border);
+    padding: 6px 8px;
+    vertical-align: top;
+  }
+
+  /* ---- Espacios de escritura ---- */
+  .ruled {
+    background-image: repeating-linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent 26px,
+      var(--line) 26px,
+      var(--line) 27px
+    );
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 2px 8px;
+    min-height: 82px;
+    margin: 4px 0 8px;
+  }
+  .ruled.short { min-height: 55px; }
+  .ruled.tall  { min-height: 110px; }
+  .ruled.xl    { min-height: 165px; }
+
+  .blank {
+    display: inline-block;
+    border-bottom: 1.5px solid var(--ink);
+    min-width: 120px;
+    height: 14px;
+    margin: 0 2px;
+  }
+  .blank.sm { min-width: 60px; }
+  .blank.lg { min-width: 200px; }
+
+  /* ---- Ejercicios ---- */
+  .exercise {
+    break-inside: avoid;
+    margin: 10px 0 16px;
+    padding-bottom: 6px;
+    border-bottom: 1px dotted var(--line);
+  }
+  .exercise:last-child { border-bottom: none; }
+  .ex-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 4px;
+    font-weight: 700;
+  }
+  .ex-num {
+    color: var(--primary);
+    font-family: system-ui, sans-serif;
+    font-size: 10pt;
+  }
+  .ex-tag {
+    font-size: 8.5pt;
+    color: var(--muted);
+    font-family: system-ui, sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .checkbox-line {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin: 6px 0;
+    font-size: 10.5pt;
+  }
+  .checkbox-line input[type=checkbox] {
+    width: 13px; height: 13px;
+    margin-top: 3px;
+    flex-shrink: 0;
+  }
+
+  /* ---- Portada ---- */
+  .cover {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    min-height: 297mm;
+    padding: 30mm 20mm;
+  }
+  .cover .badge-cover {
+    display: inline-block;
+    background: var(--primary);
+    color: white;
+    padding: 6px 14px;
+    border-radius: 100px;
+    font-size: 9pt;
+    font-family: system-ui, sans-serif;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 30px;
+  }
+  .cover h1 { font-size: 34pt; color: var(--primary); }
+  .cover .subtitle { font-size: 13pt; color: var(--muted); margin: 16px 0 40px; max-width: 500px; }
+  .cover .cover-info {
+    font-family: system-ui, sans-serif;
+    font-size: 10pt;
+    color: var(--muted);
+    border-top: 1px solid var(--border);
+    padding-top: 20px;
+    width: 100%;
+    max-width: 450px;
+    text-align: left;
+  }
+  .cover .cover-info p { margin: 4px 0; }
+  .cover .cover-meta {
+    margin-top: 40px;
+    font-size: 9pt;
+    color: var(--muted);
+  }
+  .cover .icon-set {
+    font-size: 40pt;
+    letter-spacing: 12px;
+    margin: 20px 0;
+  }
+
+  /* ---- Índice ---- */
+  .toc { font-family: system-ui, sans-serif; font-size: 10.5pt; }
+  .toc ol { list-style: none; padding: 0; counter-reset: toc; }
+  .toc li {
+    counter-increment: toc;
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 0;
+    border-bottom: 1px dotted var(--line);
+  }
+  .toc li::before {
+    content: counter(toc, decimal-leading-zero) ".";
+    font-weight: 700;
+    color: var(--primary);
+    margin-right: 10px;
+  }
+  .toc li span:first-of-type { flex: 1; }
+  .toc .sec-title {
+    font-weight: 700;
+    color: var(--primary);
+    margin-top: 14px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+    border-bottom: none;
+    display: block;
+  }
+  .toc .sec-title::before { content: none; }
+
+  /* ---- Pie de página ---- */
+  .page-footer {
+    position: absolute;
+    bottom: 10mm;
+    left: 18mm; right: 18mm;
+    font-family: system-ui, sans-serif;
+    font-size: 8.5pt;
+    color: var(--muted);
+    display: flex;
+    justify-content: space-between;
+    border-top: 1px solid var(--border);
+    padding-top: 6px;
+  }
+
+  /* ---- Salto de página ---- */
+  .page-break { break-before: page; page-break-before: always; }
+  .avoid-break { break-inside: avoid; }
+
+  /* ---- Solucionario ---- */
+  .sol-item {
+    margin: 10px 0 14px;
+    padding-left: 10px;
+    border-left: 2px solid var(--good);
+    font-size: 10pt;
+    break-inside: avoid;
+  }
+  .sol-item strong { color: var(--good); }
+  .sol-item code { background: #f0fdf4; color: #166534; }
+  .sol-item pre { border-left-color: var(--good); }
+
+  /* ============================================================
+     IMPRESIÓN
+     ============================================================ */
+  @page {
+    size: A4;
+    margin: 0;
+  }
+  @media print {
+    body { background: white; margin: 0; }
+    .page {
+      width: auto;
+      min-height: auto;
+      margin: 0;
+      padding: 18mm 16mm 22mm;
+      box-shadow: none;
+    }
+    .print-fab, .hint-screen { display: none !important; }
+    .page-footer {
+      position: fixed;
+      bottom: 8mm;
+      left: 16mm; right: 16mm;
+    }
+    a { color: inherit; text-decoration: none; }
+    pre, table, .exercise, .callout, .avoid-break { break-inside: avoid; }
+    h2, h3 { break-after: avoid; }
+    .page-break { break-before: page; page-break-before: always; }
+  }
+</style>
+</head>
+<body>
+
+<button class="print-fab" onclick="window.print()">🖨️ Imprimir / Guardar PDF</button>
+<div class="hint-screen">
+  💡 Consejo: al imprimir, elige <strong>"Guardar como PDF"</strong> y activa <strong>"Gráficos de fondo"</strong> para ver los colores.
+</div>
+
+<!-- ============================================================
+     PORTADA
+     ============================================================ -->
+<section class="page cover">
+  <div class="badge-cover">Cuaderno de ejercicios · Nivel: principiante</div>
+  <div class="icon-set">🔵 🟢 🟠</div>
+  <h1>alert, prompt<br>y confirm</h1>
+  <p class="subtitle">Teoría esencial + ejercicios planteados para dominar los diálogos del navegador en JavaScript</p>
+
+  <div class="cover-info">
+    <p><strong>Nombre del alumno:</strong> ________________________________</p>
+    <p><strong>Curso / grupo:</strong> ________________________________</p>
+    <p><strong>Fecha de inicio:</strong> ________________________________</p>
+    <p><strong>Objetivo:</strong> comprender qué hace cada función, qué devuelve exactamente y cómo combinarlas para pedir, validar y mostrar datos.</p>
+    <p><strong>Repaso espaciado sugerido:</strong> hoy → mañana → 3 días → 1 semana → 2 semanas</p>
+  </div>
+
+  <div class="cover-meta">Material autocontenido · Incluye solucionario al final</div>
+</section>
+
+<!-- ============================================================
+     ÍNDICE
+     ============================================================ -->
+<section class="page page-break">
+  <h2>Índice y modo de uso</h2>
+
+  <div class="toc">
+    <ol>
+      <li class="sec-title">📘 Parte 1 — Teoría esencial</li>
+      <li><span>Qué es un diálogo modal</span><span>3</span></li>
+      <li><span>alert(): mostrar mensajes</span><span>3</span></li>
+      <li><span>prompt(): pedir datos al usuario</span><span>4</span></li>
+      <li><span>confirm(): pedir una decisión</span><span>5</span></li>
+      <li><span>Patrón combinado y errores típicos</span><span>6</span></li>
+
+      <li class="sec-title">✏️ Parte 2 — Ejercicios planteados</li>
+      <li><span>A. Verdadero o falso (con justificación)</span><span>8</span></li>
+      <li><span>B. Emparejar conceptos</span><span>8</span></li>
+      <li><span>C. Completar código</span><span>9</span></li>
+      <li><span>D. Predecir la salida</span><span>10</span></li>
+      <li><span>E. Depurar código</span><span>11</span></li>
+      <li><span>F. Ordenar los pasos del algoritmo</span><span>12</span></li>
+      <li><span>G. Diseñar algoritmos con diálogos</span><span>13</span></li>
+      <li><span>H. Trazar la ejecución</span><span>14</span></li>
+      <li><span>I. Mini proyecto integrador</span><span>15</span></li>
+      <li><span>J. Reflexión metacognitiva</span><span>15</span></li>
+
+      <li class="sec-title">🧠 Parte 3 — Consolidación</li>
+      <li><span>Técnica Feynman + plan de repaso</span><span>16</span></li>
+
+      <li class="sec-title">✅ Solucionario</li>
+      <li><span>Respuestas de todos los ejercicios</span><span>17</span></li>
+    </ol>
+  </div>
+
+  <h3>Cómo usar este cuaderno</h3>
+  <ul>
+    <li><strong>Escribe a mano.</strong> El esfuerzo motor mejora la retención frente a teclear.</li>
+    <li><strong>Predice antes de leer la respuesta.</strong> Aunque falles, el intento prepara tu cerebro.</li>
+    <li><strong>No mires el solucionario hasta haber intentado</strong> cada ejercicio. Marca con ★ los que te costaron.</li>
+    <li><strong>Justifica siempre.</strong> "Porque sí" no cuenta. Escribe <em>por qué</em> la respuesta es esa.</li>
+    <li><strong>Repasa en 5 momentos:</strong> hoy, mañana, a los 3 días, a la semana y a las dos semanas.</li>
+  </ul>
+
+  <div class="callout good">
+    <strong>Antes de empezar</strong>
+    Si nunca has usado estas funciones, abre el editor de código, crea un archivo <code>.html</code> y prueba cada ejemplo de la Parte 1. Ver la ventana en pantalla es parte del aprendizaje.
+  </div>
+
+  <div class="page-footer"><span>alert · prompt · confirm — Cuaderno imprimible</span><span>2</span></div>
+</section>
+
+<!-- ============================================================
+     TEORÍA 1
+     ============================================================ -->
+<section class="page page-break">
+  <h2>1. ¿Qué es un diálogo modal?</h2>
+
+  <p>Un <strong>diálogo modal</strong> es una ventana que el navegador muestra <em>por encima</em> de la página y que <strong>bloquea la ejecución</strong> del script hasta que el usuario interactúa con ella. Existen tres diálogos nativos en JavaScript: <code>alert</code>, <code>prompt</code> y <code>confirm</code>. Cada uno cumple un papel distinto.</p>
+
+  <table>
+    <tr>
+      <th style="width:25%">Función</th>
+      <th style="width:35%">Propósito</th>
+      <th style="width:40%">Qué devuelve</th>
+    </tr>
+    <tr>
+      <td><code>alert(msg)</code></td>
+      <td>Mostrar un mensaje informativo</td>
+      <td><code>undefined</code> (nada útil)</td>
+    </tr>
+    <tr>
+      <td><code>prompt(msg, def)</code></td>
+      <td>Pedir un texto al usuario</td>
+      <td><code>string</code>, <code>""</code> o <code>null</code></td>
+    </tr>
+    <tr>
+      <td><code>confirm(msg)</code></td>
+      <td>Pedir una decisión sí/no</td>
+      <td><code>true</code> o <code>false</code></td>
+    </tr>
+  </table>
+
+  <h3>2. <code>alert()</code> — mostrar mensajes</h3>
+  <p>Muestra un mensaje y un botón <em>Aceptar</em>. No permite introducir datos. No devuelve nada útil (<code>undefined</code>).</p>
+
+  <pre><code><span class="kw">alert</span>(<span class="st">"Hola mundo"</span>);
+
+<span class="kw">let</span> curso = <span class="st">"JavaScript"</span>;
+<span class="kw">alert</span>(<span class="st">"Estás aprendiendo "</span> + curso);
+
+<span class="kw">alert</span>(<span class="st">`Hola, ${curso} 👋`</span>);   <span class="cm">// template literal</span></code></pre>
+
+  <div class="callout warn">
+    <strong>Error habitual</strong>
+    Crees que <code>alert</code> devuelve el mensaje porque lo ves. No lo hace: devuelve <code>undefined</code>. Si haces <code>let x = alert("hola")</code>, <code>x</code> vale <code>undefined</code>.
+  </div>
+
+  <h3>3. <code>prompt()</code> — pedir datos al usuario</h3>
+  <p>Muestra un campo de texto. El usuario puede escribir algo, aceptar sin escribir o cancelar. <strong>Siempre devuelve un string</strong> (o <code>null</code> si cancela).</p>
+
+  <pre><code><span class="kw">prompt</span>(mensaje, valorPorDefecto);</code></pre>
+
+  <table>
+    <tr><th>Acción del usuario</th><th>Devuelve</th><th>Tipo</th></tr>
+    <tr><td>Escribe y pulsa Aceptar</td><td><code>"su texto"</code></td><td>string</td></tr>
+    <tr><td>Acepta sin escribir</td><td><code>""</code></td><td>string vacío</td></tr>
+    <tr><td>Pulsa Cancelar / Esc</td><td><code>null</code></td><td>null</td></tr>
+  </table>
+
+  <pre><code><span class="kw">let</span> nombre = <span class="kw">prompt</span>(<span class="st">"¿Cómo te llamas?"</span>);
+<span class="kw">alert</span>(<span class="st">"Hola, "</span> + nombre);
+
+<span class="cm">// Con valor por defecto:</span>
+<span class="kw">let</span> ciudad = <span class="kw">prompt</span>(<span class="st">"¿Dónde vives?"</span>, <span class="st">"Madrid"</span>);</code></pre>
+
+  <div class="callout warn">
+    <strong>¡El error número 1 en JavaScript!</strong>
+    <pre style="margin:4px 0 0"><code><span class="kw">let</span> a = <span class="kw">prompt</span>(<span class="st">"num1"</span>);   <span class="cm">// "5"</span>
+<span class="kw">let</span> b = <span class="kw">prompt</span>(<span class="st">"num2"</span>);   <span class="cm">// "3"</span>
+<span class="kw">alert</span>(a + b);              <span class="cm">// "53" ❌ no es 8</span></code></pre>
+    Porque <code>prompt</code> devuelve strings y <code>+</code> con strings <em>concatena</em>. Solución: <code>Number(prompt("num1"))</code>.
+  </div>
+
+  <div class="page-footer"><span>Parte 1 — Teoría esencial</span><span>3</span></div>
+</section>
+
+<!-- ============================================================
+     TEORÍA 2
+     ============================================================ -->
+<section class="page page-break">
+  <h3>4. Conversión de tipos: la pieza clave</h3>
+
+  <p>Como <code>prompt</code> siempre devuelve un string, si quieres operar <em>matemáticamente</em> con el dato, debes convertirlo:</p>
+
+  <table>
+    <tr><th>Conversión</th><th>Resultado</th><th>Cuándo usarla</th></tr>
+    <tr><td><code>Number(x)</code></td><td>número, o <code>NaN</code> si no es válido</td><td>Cuando esperas enteros o decimales</td></tr>
+    <tr><td><code>parseInt(x, 10)</code></td><td>entero truncado</td><td>Cuando solo interesa la parte entera</td></tr>
+    <tr><td><code>parseFloat(x)</code></td><td>decimal</td><td>Cuando esperas decimales con coma flotante</td></tr>
+  </table>
+
+  <pre><code><span class="kw">let</span> a = <span class="kw">Number</span>(<span class="kw">prompt</span>(<span class="st">"num1"</span>));   <span class="cm">// si escribe 5 → 5</span>
+<span class="kw">let</span> b = <span class="kw">Number</span>(<span class="kw">prompt</span>(<span class="st">"num2"</span>));   <span class="cm">// si escribe 3 → 3</span>
+<span class="kw">alert</span>(a + b);                        <span class="cm">// 8 ✅</span></code></pre>
+
+  <div class="callout">
+    <strong>Comportamiento curioso</strong>
+    <code>Number("")</code> devuelve <code>0</code>. <code>Number("hola")</code> devuelve <code>NaN</code>. Para detectar el segundo caso: <code>isNaN(x)</code> devuelve <code>true</code>.
+  </div>
+
+  <h3>5. <code>confirm()</code> — pedir una decisión</h3>
+  <p>Muestra un mensaje con dos botones: <em>Aceptar</em> y <em>Cancelar</em>. Devuelve un <strong>booleano</strong>.</p>
+
+  <table>
+    <tr><th>Acción del usuario</th><th>Devuelve</th></tr>
+    <tr><td>Pulsa Aceptar</td><td><code>true</code></td></tr>
+    <tr><td>Pulsa Cancelar / Esc</td><td><code>false</code></td></tr>
+  </table>
+
+  <pre><code><span class="kw">let</span> ok = <span class="kw">confirm</span>(<span class="st">"¿Seguro que quieres continuar?"</span>);
+
+<span class="kw">if</span> (ok) {
+  <span class="kw">alert</span>(<span class="st">"Continuamos ✅"</span>);
+} <span class="kw">else</span> {
+  <span class="kw">alert</span>(<span class="st">"Cancelado ❌"</span>);
+}</code></pre>
+
+  <div class="callout warn">
+    <strong>Error frecuente con confirm</strong>
+    <pre style="margin:4px 0 0"><code><span class="cm">// ❌ mal:</span>
+<span class="kw">if</span> (<span class="kw">confirm</span>(<span class="st">"¿Borrar?"</span>) === <span class="st">"true"</span>) { ... }
+
+<span class="cm">// ✅ bien:</span>
+<span class="kw">if</span> (<span class="kw">confirm</span>(<span class="st">"¿Borrar?"</span>)) { ... }</code></pre>
+    <code>confirm</code> devuelve el booleano <code>true</code>, <strong>no</strong> el string <code>"true"</code>. Comparar con el string siempre da <code>false</code>.
+  </div>
+
+  <h3>6. Patrón combinado: pedir → validar → confirmar → mostrar</h3>
+
+  <pre><code><span class="kw">let</span> nombre = <span class="kw">prompt</span>(<span class="st">"¿Cómo te llamas?"</span>);
+
+<span class="kw">if</span> (nombre === <span class="kw">null</span> || nombre.trim() === <span class="st">""</span>) {
+  <span class="kw">alert</span>(<span class="st">"No escribiste un nombre."</span>);
+} <span class="kw">else</span> {
+  <span class="kw">let</span> ok = <span class="kw">confirm</span>(<span class="st">`¿Confirmas que te llamas "${nombre}"?`</span>);
+  <span class="kw">if</span> (ok) {
+    <span class="kw">alert</span>(<span class="st">`¡Bienvenido, ${nombre}! 🎉`</span>);
+  } <span class="kw">else</span> {
+    <span class="kw">alert</span>(<span class="st">"Vale, no guardaré ese nombre."</span>);
+  }
+}</code></pre>
+
+  <div class="callout good">
+    <strong>Memoriza este patrón</strong>
+    <code>prompt</code> → validar (<code>null</code>, <code>""</code>, <code>NaN</code>) → <code>confirm</code> → <code>alert</code>. Lo usarás una y otra vez.
+  </div>
+
+  <h3>7. Tabla comparativa final</h3>
+  <table>
+    <tr>
+      <th>Función</th><th>Tipo</th><th>Devuelve</th><th>Se usa para</th><th>Riesgo típico</th>
+    </tr>
+    <tr><td><code>alert</code></td><td>Salida</td><td><code>undefined</code></td><td>Informar</td><td>Usarlo para depurar en producción (mejor <code>console.log</code>)</td></tr>
+    <tr><td><code>prompt</code></td><td>Entrada texto</td><td><code>string</code> | <code>""</code> | <code>null</code></td><td>Pedir datos</td><td>No convertirlo a número / no validar <code>null</code></td></tr>
+    <tr><td><code>confirm</code></td><td>Entrada booleana</td><td><code>true</code> | <code>false</code></td><td>Pedir decisión</td><td>Compararlo con <code>"true"</code></td></tr>
+  </table>
+
+  <div class="page-footer"><span>Parte 1 — Teoría esencial</span><span>4</span></div>
+</section>
+
+<!-- ============================================================
+     EJERCICIOS A Y B
+     ============================================================ -->
+<section class="page page-break">
+  <h2>✏️ Parte 2 — Ejercicios planteados</h2>
+  <p><small>Intenta cada ejercicio <strong>antes</strong> de mirar el solucionario (páginas 17-19). Marca con ★ los que te cuesten para repasarlos.</small></p>
+
+  <h3>Ejercicio A — Verdadero o falso <em>(con justificación obligatoria)</em></h3>
+  <p><small>Escribe V o F y, en el espacio de la derecha, justifica en una frase por qué.</small></p>
+
+  <div class="exercise">
+    <div class="ex-head"><span class="ex-num">A1</span><span class="ex-tag">alert</span></div>
+    <p><code>alert("hola")</code> devuelve el string <code>"hola"</code>.</p>
+    <p><span class="blank sm"></span> Justificación:</p>
+    <div class="ruled short"></div>
+  </div>
+
+  <div class="exercise">
+    <div class="ex-head"><span class="ex-num">A2</span><span class="ex-tag">prompt</span></div>
+    <p><code>prompt()</code> devuelve <code>false</code> cuando el usuario pulsa Cancelar.</p>
+    <p><span class="blank sm"></span> Justificación:</p>
+    <div class="ruled short"></div>
+  </div>
+
+  <div class="exercise">
+    <div class="ex-head"><span class="ex-num">A3</span><span class="ex-tag">prompt</span></div>
+    <p><code>Number("")</code> devuelve <code>0</code>.</p>
+    <p><span class="blank sm"></span> Justificación:</p>
+    <div class="ruled short"></div>
+  </div>
+
+  <div class="exercise">
+    <div class="ex-head"><span class="ex-num">A4</span><span class="ex-tag">confirm</span></div>
+    <p><code>confirm("¿?")</code> bloquea la ejecución del script hasta que el usuario responde.</p>
+    <p><span class="blank sm"></span> Justificación:</p>
+    <div class="ruled short"></div>
+  </div>
+
+  <div class="exercise">
+    <div class="ex-head"><span class="ex-num">A5</span><span class="ex-tag">tipos</span></div>
+    <p>Si el usuario cancela un <code>prompt</code>, escribir <code>x.toUpperCase()</code> funciona sin problema.</p>
+    <p><span class="blank sm"></span> Justificación:</p>
+    <div class="ruled short"></div>
+  </div>
+
+  <div class="exercise">
+    <div class="ex-head"><span class="ex-num">A6</span><span class="ex-tag">conversión</span></div>
+    <p><code>"5" * 2</code> produce <code>10</code> (número), pero <code>"5" + 2</code> produce <code>"52"</code> (string).</p>
+    <p><span class="blank sm"></span> Justificación:</p>
+    <div class="ruled short"></div>
+  </div>
+
+  <h3>Ejercicio B — Emparejar conceptos</h3>
+  <p><small>Escribe la letra de la columna derecha junto a cada elemento de la izquierda.</small></p>
+
+  <table>
+    <tr>
+      <th style="width:10%"></th>
+      <th style="width:45%">Elemento</th>
+      <th style="width:45%">Definición / uso</th>
+    </tr>
+    <tr><td style="text-align:center"><span class="blank sm" style="min-width:30px"></span></td><td>1. <code>alert</code></td><td>A. Convierte un string a número (o <code>NaN</code>)</td></tr>
+    <tr><td style="text-align:center"><span class="blank sm" style="min-width:30px"></span></td><td>2. <code>prompt</code></td><td>B. Devuelve <code>true</code> o <code>false</code></td></tr>
+    <tr><td style="text-align:center"><span class="blank sm" style="min-width:30px"></span></td><td>3. <code>confirm</code></td><td>C. Detecta si un valor no es un número</td></tr>
+    <tr><td style="text-align:center"><span class="blank sm" style="min-width:30px"></span></td><td>4. <code>Number</code></td><td>D. Muestra un mensaje informativo (sin devolver nada útil)</td></tr>
+    <tr><td style="text-align:center"><span class="blank sm" style="min-width:30px"></span></td><td>5. <code>isNaN</code></td><td>E. Pide un texto al usuario y devuelve string o null</td></tr>
+    <tr><td style="text-align:center"><span class="blank sm" style="min-width:30px"></span></td><td>6. <code>console.log</code></td><td>F. Herramienta de depuración en la consola del navegador</td></tr>
+  </table>
+
+  <div class="page-footer"><span>Parte 2 — Ejercicios</span><span>5</span></div>
+</section>
+
+<!-- ============================================================
+     EJERCICIO C: COMPLETAR CÓDIGO
+     ============================================================ -->
+<section class="page page-break">
+  <h3>Ejercicio C — Completar el código</h3>
+  <p><small>Rellena los huecos con la función o expresión correcta. Puedes haber más de un hueco por ejercicio.</small></p>
+
+  <div class="exercise">
+    <div class="ex-head"><span class="ex-num">C1</span><span class="ex-tag">salida</span></div>
+    <p>Muestra un saludo al usuario:</p>
+    <pre><code><span class="kw">______</span>(<span class="st">"Bienvenido al curso"</span>);</code></pre>
+    <p>Respuesta: <span class="blank lg"></span></p>
+  </div>
+
+  <div class="exercise">
+    <div class="ex-head"><span class="ex-num">C2</span><span class="ex-tag">entrada + conversión</span></div>
+    <p>Pide un número y guárdalo como número real:</p>
+    <pre><code><span class="kw">let</span> edad = <span class="kw">______</span>(<span class="kw">______</span>(<span class="st">"¿Cuántos años tienes?"</span>));</code></pre>
+    <p>Primer hueco: <span class="blank"></span> · Segundo hueco: <span class="blank"></span></p>
+  </div>
+
+  <div class="exercise">
+    <div class="ex-head"><span class="ex-num">C3</span><span class="ex-tag">decisión</span></div>
+    <p>Pregunta al usuario si desea eliminar un archivo:</p>
+    <pre><code><span class="kw">let</span> seguro = <span class="kw">______</span>(<span class="st">"¿Eliminar el archivo?"</span>);
+
+<span class="kw">if</span> (seguro) {
+  <span class="kw">alert</span>(<span class="st">"Archivo eliminado"</span>);
+}</code></pre>
+    <p>Respuesta: <span class="blank lg"></span></p>
+  </div>
+
+  <div class="exercise">
+    <div class="ex-head"><span class="ex-num">C4</span><span class="ex-tag">validación de null</span></div>
+    <p>Valida que el usuario no haya cancelado el prompt:</p>
+    <pre><code><span class="kw">let</span> nombre = <span class="kw">prompt</span>(<span class="st">"Nombre:"</span>);
+
+<span class="kw">if</span> (nombre === <span class="kw">______</span>) {
+  <span class="kw">alert</span>(<span class="st">"Cancelaste"</span>);
+} <span class="kw">else</span> {
+  <span class="kw">alert</span>(<span class="st">"Hola, "</span> + nombre);
+}</code></pre>
+    <p>Respuesta: <span class="blank lg"></span></p>
+  </div>
+
+  <div class="exercise">
+    <div class="ex-head"><span class="ex-num">C5</span><span class="ex-tag">validación de número</span></div>
+    <p>Comprueba si lo que escribió el usuario no es un número:</p>
+    <pre><code><span class="kw">let</span> valor = <span class="kw">Number</span>(<span class="kw">prompt</span>(<span class="st">"Número:"</span>));
+
+<span class="kw">if</span> (<span class="kw">______</span>(valor)) {
+  <span class="kw">alert</span>(<span class="st">"¡Eso no es un número!"</span>);
+}</code></pre>
+    <p>Respuesta: <span class="blank lg"></span></p>
+  </div>
+
+  <div class="exercise">
+    <div class="ex-head"><span class="ex-num">C6</span><span class="ex-tag">cálculo + salida</span></div>
+    <p>Calcula el doble de un número pedido al usuario y muéstralo:</p>
+    <pre><code><span class="kw">let</span> n = <span class="kw">Number</span>(<span class="kw">prompt</span>(<span class="st">"Dime un número"</span>));
+<span class="kw">let</span> doble = n <span class="kw">______</span> <span class="num">2</span>;
+<span class="kw">______</span>(<span class="st">`El doble de ${n} es ${doble}`</span>);</code></pre>
+    <p>Primer hueco: <span class="blank sm"></span> · Segundo hueco: <span class="blank"></span></p>
+  </div>
+
+  <div class="exercise">
+    <div class="ex-head"><span class="ex-num">C7</span><span class="ex-tag">combinación</span></div>
+    <p>Pide la edad, valida que sea un número válido y muestra la edad en un año más:</p>
+    <pre><code><span class="kw">let</span> edad = <span class="kw">______</span>(<span class="kw">prompt</span>(<span class="st">"Tu edad:"</span>));
+
+<span class="kw">if</span> (<span class="kw">______</span>(edad)) {
+  <span class="kw">alert</span>(<span class="st">"Edad inválida"</span>);
+} <span class="kw">else</span> {
+  <span class="kw">alert</span>(<span class="st">`En un año tendrás ${edad + 1} años`</span>);
+}</code></pre>
+    <p>Primer hueco: <span class="blank"></span> · Segundo hueco: <span class="blank"></span></p>
+  </div>
+
+  <div class="page-footer"><span>Parte 2 — Ejercicios</span><span>6</span></div>
+</section>
+
+<!-- ============================================================
+     EJERCICIO D: PREDECIR SALIDA
+     ============================================================ -->
+<section class="page page-break">
+  <h3>Ejercicio D — Predecir la salida</h3>
+  <p><small>Para cada fragmento, escribe <strong>qué mostrará exactamente</strong> la ventana de alert y <strong>por qué</strong>.</small></p>
+
+  <div class="exercise">
+    <div class="ex-head"><span class="ex-num">D1</span><span class="ex-tag">tipo de dato</span></div>
+    <p>El usuario escribe <code>hola</code>:</p>
+    <pre><code><span class="kw">alert</span>(<span class="kw">typeof</span> <span class="kw">prompt</span>(<span class="st">"x"</span>));</code></pre>
+    <p>Salida: <span class="blank"></span> · ¿Por qué?</p>
+    <div class="ruled short"></div>
+  </div>
+
+  <div class="exercise">
+    <div class="ex-head"><span class="ex-num">D2</span><span class="ex-tag">conversión numérica</span></div>
+    <pre><code><span class="kw">alert</span>(<span class="kw">Number</span>(<span class="st">"3"</span>) + <span class="kw">Number</span>(<span class="st">"4"</span>));</code></pre>
+    <p>Salida: <span class="blank"></span> · ¿Por qué?</p>
+    <div class="ruled short"></div>
+  </div>
+
+  <div class="exercise">
+    <div class="ex-head"><span class="ex-num">D3</span><span class="ex-tag">concat vs suma</span></div>
+    <pre><code><span class="kw">alert</span>(<span class="st">"3"</span> + <span class="st">"4"</span>);</code></pre>
+    <p>Salida: <span class="blank"></span> · ¿Por qué?</p>
+    <div class="ruled short"></div>
+  </div>
+
+  <div class="exercise">
+    <div class="ex-head"><span class="ex-num">D4</span><span class="ex-tag">tipo de confirm</span></div>
+    <pre><code><span class="kw">let</span> x = <span class="kw">confirm</span>(<span class="st">"¿ok?"</span>);
+<span class="kw">alert</span>(<span class="kw">typeof</span> x);</code></pre>
+    <p>Salida: <span class="blank"></span> · ¿Por qué?</p>
+    <div class="ruled short"></div>
+  </div>
+
+  <div class="exercise">
+    <div class="ex-head"><span class="ex-num">D5</span><span class="ex-tag">número + string</span></div>
+    <p>El usuario escribe <code>5</code>:</p>
+    <pre><code><span class="kw">alert</span>(<span class="kw">prompt</span>(<span class="st">"x"</span>) + <span class="num">1</span>);</code></pre>
+    <p>Salida: <span class="blank"></span> · ¿Por qué?</p>
+    <div class="ruled short"></div>
+  </div>
+
+  <div class="exercise">
+    <div class="ex-head"><span class="ex-num">D6</span><span class="ex-tag">multiplicación</span></div>
+    <p>El usuario escribe <code>5</code>:</p>
+    <pre><code><span class="kw">alert</span>(<span class="kw">prompt</span>(<span class="st">"x"</span>) * <span class="num">2</span>);</code></pre>
+    <p>Salida: <span class="blank"></span> · ¿Por qué?</p>
+    <div class="ruled short"></div>
+  </div>
+
+  <div class="exercise">
+    <div class="ex-head"><span class="ex-num">D7</span><span class="ex-tag">trampa</span></div>
+    <p>El usuario escribe <code>10</code>:</p>
+    <pre><code><span class="kw">let</span> n = <span class="kw">prompt</span>(<span class="st">"x"</span>);
+<span class="kw">alert</span>(n + <span class="st">"0"</span>);
+<span class="kw">alert</span>(n * <span class="num">1</span>);</code></pre>
+    <p>Primera salida: <span class="blank"></span> · Segunda salida: <span class="blank"></span></p>
+    <div class="ruled short"></div>
+  </div>
+
+  <div class="page-footer"><span>Parte 2 — Ejercicios</span><span>7</span></div>
+</section>
+
+<!-- ============================================================
+     EJERCICIO E: DEPURAR
+     ============================================================ -->
+<section class="page page-break">
+  <h3>Ejercicio E — Depurar código</h3>
+  <p><small>Cada fragmento contiene <strong>al menos un error</strong>. Identifícalo, explica qué ocurre y escribe la corrección.</small></p>
+
+  <div class="exercise">
+    <div class="ex-head"><span class="ex-num">E1</span><span class="ex-tag">comparación incorrecta</span></div>
+    <pre><code><span class="kw">let</span> a = <span class="kw">prompt</span>(<span class="st">"n1"</span>);
+<span class="kw">let</span> b = <span class="kw">prompt</span>(<span class="st">"n2"</span>);
+<span class="kw">if</span> (a + b === <span class="num">8</span>) {
+  <span class="kw">alert</span>(<span class="st">"Es 8"</span>);
+}</code></pre>
+    <p>El usuario escribe 5 y 3, pero el alert nunca aparece. ¿Por qué y cómo se corrige?</p>
+    <div class="ruled tall"></div>
+  </div>
+
+  <div class="exercise">
+    <div class="ex-head"><span class="ex-num">E2</span><span class="ex-tag">null sin validar</span></div>
+    <pre><code><span class="kw">let</span> nombre = <span class="kw">prompt</span>(<span class="st">"Tu nombre:"</span>);
+<span class="kw">alert</span>(nombre.toUpperCase());</code></pre>
+    <p>Funciona si el usuario escribe. ¿Qué pasa si pulsa Cancelar? Corrige el código.</p>
+    <div class="ruled tall"></div>
+  </div>
+
+  <div class="exercise">
+    <div class="ex-head"><span class="ex-num">E3</span><span class="ex-tag">función equivocada</span></div>
+    <pre><code><span class="kw">let</span> ok = <span class="kw">prompt</span>(<span class="st">"¿Eliminar el archivo? (sí/no)"</span>);
+
+<span class="kw">if</span> (ok) {
+  <span class="kw">alert</span>(<span class="st">"Eliminado"</span>);
+}</code></pre>
+    <p>Funciona pero es una mala elección de función. ¿Por qué? Reescríbelo con la función correcta.</p>
+    <div class="ruled tall"></div>
+  </div>
+
+  <div class="exercise">
+    <div class="ex-head"><span class="ex-num">E4</span><span class="ex-tag">convertir a tiempo</span></div>
+    <pre><code><span class="kw">let</span> edad = <span class="kw">prompt</span>(<span class="st">"Edad:"</span>);
+<span class="kw">let</span> futura = edad + <span class="num">10</span>;
+<span class="kw">alert</span>(<span class="st">"En 10 años tendrás "</span> + futura);</code></pre>
+    <p>Si el usuario escribe 20, muestra <code>"En 10 años tendrás 2010"</code>. Corrige para que muestre <code>30</code>.</p>
+    <div class="ruled tall"></div>
+  </div>
+
+  <div class="exercise">
+    <div class="ex-head"><span class="ex-num">E5</span><span class="ex-tag">lógica invertida</span></div>
+    <pre><code><span class="kw">let</span> ok = <span class="kw">confirm</span>(<span class="st">"¿Quieres salir?"</span>);
+<span class="kw">if</span> (!ok) {
+  <span class="kw">alert</span>(<span class="st">"Saliendo..."</span>);
+} <span class="kw">else</span> {
+  <span class="kw">alert</span>(<span class="st">"Sigues dentro"</span>);
+}</code></pre>
+    <p>El mensaje está invertido: al pulsar Aceptar dice "Sigues dentro". Corrige el código.</p>
+    <div class="ruled tall"></div>
+  </div>
+
+  <div class="page-footer"><span>Parte 2 — Ejercicios</span><span>8</span></div>
+</section>
+
+<!-- ============================================================
+     EJERCICIO F: ORDENAR
+     ============================================================ -->
+<section class="page page-break">
+  <h3>Ejercicio F — Ordenar los pasos del algoritmo</h3>
+  <p><small>Los pasos están desordenados. Numera del 1 al N en el orden correcto para que el programa funcione bien.</small></p>
+
+  <div class="exercise">
+    <div class="ex-head"><span class="ex-num">F1</span><span class="ex-tag">pedir edad y validar</span></div>
+    <p>Objetivo: pedir la edad al usuario, validar que sea un número y mostrar un mensaje.</p>
+    <table>
+      <tr><th style="width:12%">#</th><th>Paso</th></tr>
+      <tr><td style="text-align:center"><span class="blank sm" style="min-width:35px"></span></td><td>Convertir el valor con <code>Number()</code></td></tr>
+      <tr><td style="text-align:center"><span class="blank sm" style="min-width:35px"></span></td><td>Mostrar el resultado con <code>alert</code></td></tr>
+      <tr><td style="text-align:center"><span class="blank sm" style="min-width:35px"></span></td><td>Comprobar si el resultado es <code>NaN</code> con <code>isNaN()</code></td></tr>
+      <tr><td style="text-align:center"><span class="blank sm" style="min-width:35px"></span></td><td>Pedir la edad con <code>prompt</code></td></tr>
+    </table>
+  </div>
+
+  <div class="exercise">
+    <div class="ex-head"><span class="ex-num">F2</span><span class="ex-tag">confirmar eliminación</span></div>
+    <p>Objetivo: pedir confirmación antes de eliminar y actuar en consecuencia.</p>
+    <table>
+      <tr><th style="width:12%">#</th><th>Paso</th></tr>
+      <tr><td style="text-align:center"><span class="blank sm" style="min-width:35px"></span></td><td>Si devuelve <code>true</code>: mostrar "Eliminado"</td></tr>
+      <tr><td style="text-align:center"><span class="blank sm" style="min-width:35px"></span></td><td>Guardar el resultado de <code>confirm</code> en una variable</td></tr>
+      <tr><td style="text-align:center"><span class="blank sm" style="min-width:35px"></span></td><td>Llamar a <code>confirm("¿Eliminar?")</code></td></tr>
+      <tr><td style="text-align:center"><span class="blank sm" style="min-width:35px"></span></td><td>Si devuelve <code>false</code>: mostrar "Cancelado"</td></tr>
+    </table>
+  </div>
+
+  <div class="exercise">
+    <div class="ex-head"><span class="ex-num">F3</span><span class="ex-tag">nombre con confirmación</span></div>
+    <p>Objetivo: pedir el nombre, validar que no esté vacío, confirmar y saludar.</p>
+    <table>
+      <tr><th style="width:12%">#</th><th>Paso</th></tr>
+      <tr><td style="text-align:center"><span class="blank sm" style="min-width:35px"></span></td><td>Si está vacío o es <code>null</code>: mostrar error y terminar</td></tr>
+      <tr><td style="text-align:center"><span class="blank sm" style="min-width:35px"></span></td><td>Pedir el nombre con <code>prompt</code></td></tr>
+      <tr><td style="text-align:center"><span class="blank sm" style="min-width:35px"></span></td><td>Mostrar "Hola, [nombre]"</td></tr>
+      <tr><td style="text-align:center"><span class="blank sm" style="min-width:35px"></span></td><td>Preguntar con <code>confirm</code> si el nombre es correcto</td></tr>
+    </table>
+  </div>
+
+  <h3>Ejercicio G — Diseñar algoritmos con diálogos</h3>
+  <p><small>Para cada enunciado, escribe el código completo (puedes usar pseudocódigo si prefieres, pero se recomienda JS real).</small></p>
+
+  <div class="exercise">
+    <div class="ex-head"><span class="ex-num">G1</span><span class="ex-tag">calculadora de propina</span></div>
+    <p>Pide al usuario el total de la cuenta y el porcentaje de propina. Calcula la propina y el total final. Muestra ambos con <code>alert</code>. Valida que ambos datos sean números válidos.</p>
+    <div class="ruled xl"></div>
+  </div>
+
+  <div class="page-footer"><span>Parte 2 — Ejercicios</span><span>9</span></div>
+</section>
+
+<!-- ============================================================
+     EJERCICIO G (continúa)
+     ============================================================ -->
+<section class="page page-break">
+  <div class="exercise">
+    <div class="ex-head"><span class="ex-num">G2</span><span class="ex-tag">verificador de contraseña</span></div>
+    <p>Pide una contraseña con <code>prompt</code>. Si tiene menos de 8 caracteres, muestra un <code>alert</code> de error. Si tiene 8 o más, pregunta con <code>confirm</code> si desea guardarla. Muestra el resultado final.</p>
+    <div class="ruled xl"></div>
+  </div>
+
+  <div class="exercise">
+    <div class="ex-head"><span class="ex-num">G3</span><span class="ex-tag">encuesta simple</span></div>
+    <p>Pide al usuario su nombre y su edad. Si es mayor de edad (≥ 18), pregúntale con <code>confirm</code> si quiere recibir información. Muestra un mensaje personalizado según su respuesta. Si es menor de edad, muestra un mensaje indicando que no puede participar.</p>
+    <div class="ruled xl"></div>
+  </div>
+
+  <div class="exercise">
+    <div class="ex-head"><span class="ex-num">G4</span><span class="ex-tag">conversor de moneda</span></div>
+    <p>Pide una cantidad en euros y una tasa de cambio (por ejemplo, 1.08 para dólares). Calcula el resultado y muéstralo con dos decimales (<code>.toFixed(2)</code>). Pide confirmación antes de mostrar el resultado final.</p>
+    <div class="ruled xl"></div>
+  </div>
+
+  <div class="exercise">
+    <div class="ex-head"><span class="ex-num">G5</span><span class="ex-tag">reto: cajero automático</span></div>
+    <p>Pide al usuario un importe a retirar. Si es menor o igual que 100, confirma la operación con <code>confirm</code> y muestra un mensaje. Si es mayor que 100, muestra un <code>alert</code> indicando que supera el límite. Valida que el valor sea un número válido.</p>
+    <div class="ruled xl"></div>
+  </div>
+
+  <div class="page-footer"><span>Parte 2 — Ejercicios</span><span>10</span></div>
+</section>
+
+<!-- ============================================================
+     EJERCICIO H: TRAZAR
+     ============================================================ -->
+<section class="page page-break">
+  <h3>Ejercicio H — Trazar la ejecución</h3>
+  <p><small>Ejecuta mentalmente el código paso a paso y completa la tabla de variables. Marca el valor de cada variable tras cada instrucción. Al final, escribe lo que ve el usuario.</small></p>
+
+  <div class="exercise">
+    <div class="ex-head"><span class="ex-num">H1</span><span class="ex-tag">traza simple</span></div>
+    <pre><code><span class="kw">let</span> a = <span class="kw">prompt</span>(<span class="st">"Primer valor"</span>);       <span class="cm">// usuario: 4</span>
+<span class="kw">let</span> b = <span class="kw">prompt</span>(<span class="st">"Segundo valor"</span>);      <span class="cm">// usuario: 6</span>
+<span class="kw">let</span> suma = <span class="kw">Number</span>(a) + <span class="kw">Number</span>(b);
+<span class="kw">let</span> doble = suma * <span class="num">2</span>;
+<span class="kw">let</span> ok = <span class="kw">confirm</span>(<span class="st">"¿Mostrar resultado?"</span>);   <span class="cm">// usuario: Aceptar</span>
+
+<span class="kw">if</span> (ok) {
+  <span class="kw">alert</span>(<span class="st">`Suma: ${suma}, doble: ${doble}`</span>);
+}</code></pre>
+    <table>
+      <tr><th>Paso</th><th>a</th><th>b</th><th>suma</th><th>doble</th><th>ok</th></tr>
+      <tr><td>Tras leer a</td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td>Tras leer b</td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td>Tras calcular suma</td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td>Tras calcular doble</td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td>Tras leer ok</td><td></td><td></td><td></td><td></td><td></td></tr>
+    </table>
+    <p>¿Qué muestra el alert?: <span class="blank lg"></span></p>
+  </div>
+
+  <div class="exercise">
+    <div class="ex-head"><span class="ex-num">H2</span><span class="ex-tag">traza con validación</span></div>
+    <pre><code><span class="kw">let</span> entrada = <span class="kw">prompt</span>(<span class="st">"Número"</span>);   <span class="cm">// usuario: "hola"</span>
+<span class="kw">let</span> n = <span class="kw">Number</span>(entrada);
+
+<span class="kw">if</span> (<span class="kw">isNaN</span>(n)) {
+  <span class="kw">alert</span>(<span class="st">"Dato inválido"</span>);
+} <span class="kw">else</span> {
+  <span class="kw">alert</span>(<span class="st">`El doble es ${n * 2}`</span>);
+}</code></pre>
+    <table>
+      <tr><th>Paso</th><th>entrada</th><th>n</th><th>isNaN(n)</th></tr>
+      <tr><td>Tras prompt</td><td></td><td></td><td></td></tr>
+      <tr><td>Tras Number</td><td></td><td></td><td></td></tr>
+      <tr><td>Al evaluar if</td><td></td><td></td><td></td></tr>
+    </table>
+    <p>¿Qué muestra el alert?: <span class="blank lg"></span></p>
+  </div>
+
+  <div class="exercise">
+    <div class="ex-head"><span class="ex-num">H3</span><span class="ex-tag">traza con cancelación</span></div>
+    <pre><code><span class="kw">let</span> nombre = <span class="kw">prompt</span>(<span class="st">"Nombre"</span>);   <span class="cm">// usuario: Cancelar</span>
+
+<span class="kw">if</span> (nombre === <span class="kw">null</span>) {
+  <span class="kw">alert</span>(<span class="st">"Cancelaste"</span>);
+} <span class="kw">else if</span> (nombre === <span class="st">""</span>) {
+  <span class="kw">alert</span>(<span class="st">"Vacío"</span>);
+} <span class="kw">else</span> {
+  <span class="kw">alert</span>(<span class="st">"Hola, "</span> + nombre);
+}</code></pre>
+    <p>¿Qué rama del if se ejecuta?: <span class="blank lg"></span></p>
+    <p>¿Qué mensaje ve el usuario?: <span class="blank lg"></span></p>
+    <p>¿Por qué las comprobaciones van en ese orden? (piensa qué pasaría si pusiéramos <code>nombre === ""</code> primero)</p>
+    <div class="ruled tall"></div>
+  </div>
+
+  <div class="page-footer"><span>Parte 2 — Ejercicios</span><span>11</span></div>
+</section>
+
+<!-- ============================================================
+     EJERCICIO I Y J
+     ============================================================ -->
+<section class="page page-break">
+  <h3>Ejercicio I — Mini proyecto integrador</h3>
+  <p><small>Resuelve el siguiente escenario completo. Se evaluará: uso correcto de las tres funciones, validación, mensajes claros y estructura.</small></p>
+
+  <div class="callout">
+    <strong>🎬 Escenario: reserva de cine</strong>
+    Un cine quiere un script que:
+    <ol style="margin:6px 0 0">
+      <li>Pida el nombre del cliente.</li>
+      <li>Pida la edad del cliente (número válido).</li>
+      <li>Pida el número de entradas (número entero ≥ 1).</li>
+      <li>Si el cliente es menor de edad, avise que debe ir acompañado y pregunte con <code>confirm</code> si va acompañado.</li>
+      <li>Calcule el precio total: 6€ por entrada; si es menor de edad, 4€.</li>
+      <li>Pida confirmación final antes de mostrar el resumen.</li>
+      <li>Muestre un resumen con nombre, entradas y total.</li>
+    </ol>
+  </div>
+
+  <p><strong>Escribe tu solución aquí:</strong></p>
+  <div class="ruled xl" style="min-height:400px"></div>
+
+  <div class="page-footer"><span>Parte 2 — Ejercicios</span><span>12</span></div>
+</section>
+
+<!-- ============================================================
+     EJERCICIO J + FEYNMAN
+     ============================================================ -->
+<section class="page page-break">
+  <h3>Ejercicio J — Reflexión metacognitiva</h3>
+  <p><small>Esta parte es tan importante como los ejercicios de código. Responder te ayuda a consolidar y a saber qué repasar.</small></p>
+
+  <div class="exercise">
+    <div class="ex-head"><span class="ex-num">J1</span><span class="ex-tag">autoevaluación</span></div>
+    <p>¿Qué ejercicio te costó más y por qué crees que fue?</p>
+    <div class="ruled tall"></div>
+  </div>
+
+  <div class="exercise">
+    <div class="ex-head"><span class="ex-num">J2</span><span class="ex-tag">metacognición</span></div>
+    <p>Antes de mirar el solucionario, ¿qué ejercicio creías haber hecho bien y resultó que estaba mal? ¿Por qué crees que tu predicción falló?</p>
+    <div class="ruled tall"></div>
+  </div>
+
+  <div class="exercise">
+    <div class="ex-head"><span class="ex-num">J3</span><span class="ex-tag">regla personal</span></div>
+    <p>Escribe <strong>tu propia regla mnemotécnica</strong> para recordar la diferencia entre <code>alert</code>, <code>prompt</code> y <code>confirm</code>.</p>
+    <div class="ruled tall"></div>
+  </div>
+
+  <div class="exercise">
+    <div class="ex-head"><span class="ex-num">J4</span><span class="ex-tag">próximo paso</span></div>
+    <p>¿Qué necesitas repasar antes de avanzar a formularios HTML con <code>addEventListener</code>?</p>
+    <div class="ruled tall"></div>
+  </div>
+
+  <h3>Técnica Feynman — Explícalo como si enseñaras</h3>
+  <p>Escribe con tus propias palabras una explicación de las tres funciones dirigida a alguien que nunca ha programado. No mires el cuaderno. Si te trabas en algo, ¡esa es la parte que necesitas repasar!</p>
+  <div class="ruled xl" style="min-height:220px"></div>
+
+  <h3>Plan de repaso espaciado</h3>
+  <p>Marca la casilla al completar cada repaso. Los repasos cortos (5-10 minutos) son más efectivos que uno largo.</p>
+  <div class="checkbox-line"><input type="checkbox" id="r1"><label for="r1"><strong>Hoy:</strong> rehaz un ejemplo completo de memoria (sin mirar el cuaderno).</label></div>
+  <div class="checkbox-line"><input type="checkbox" id="r2"><label for="r2"><strong>Mañana:</strong> repite los ejercicios D2 y D5 sin mirar el solucionario.</label></div>
+  <div class="checkbox-line"><input type="checkbox" id="r3"><label for="r3"><strong>En 3 días:</strong> repite los ejercicios E1 y E2.</label></div>
+  <div class="checkbox-line"><input type="checkbox" id="r4"><label for="r4"><strong>En 1 semana:</strong> resuelve el mini proyecto del Ejercicio I de nuevo, más rápido.</label></div>
+  <div class="checkbox-line"><input type="checkbox" id="r5"><label for="r5"><strong>En 2 semanas:</strong> reescribe el Ejercicio G5 sin mirar nada.</label></div>
+
+  <div class="page-footer"><span>Parte 3 — Consolidación</span><span>13</span></div>
+</section>
+
+<!-- ============================================================
+     SOLUCIONARIO
+     ============================================================ -->
+<section class="page page-break">
+  <h2>✅ Solucionario — Ejercicio A</h2>
+  <p><small>No mires esta sección hasta haber intentado cada ejercicio por tu cuenta. Si acertaste pero por otra razón, ¡también cuenta como error de razonamiento!</small></p>
+
+  <div class="sol-item"><strong>A1 · Falso.</strong> <code>alert</code> devuelve <code>undefined</code>, no el mensaje. El mensaje solo se <em>muestra</em>, no se <em>retorna</em>.</div>
+  <div class="sol-item"><strong>A2 · Falso.</strong> <code>prompt</code> devuelve <code>null</code> al cancelar. <code>false</code> es lo que devuelve <code>confirm</code> al cancelar.</div>
+  <div class="sol-item"><strong>A3 · Verdadero.</strong> <code>Number("")</code> es <code>0</code> porque la cadena vacía se interpreta como 0. Cuidado: <code>Number(" ")</code> (con espacio) también es 0.</div>
+  <div class="sol-item"><strong>A4 · Verdadero.</strong> Es un diálogo modal: bloquea la ejecución hasta que el usuario pulsa Aceptar o Cancelar.</div>
+  <div class="sol-item"><strong>A5 · Falso.</strong> Si el usuario cancela, <code>nombre</code> es <code>null</code> y <code>null.toUpperCase()</code> lanza <em>TypeError: Cannot read properties of null</em>. Hay que validar el <code>null</code> antes.</div>
+  <div class="sol-item"><strong>A6 · Verdadero.</strong> El operador <code>*</code> fuerza conversión numérica (5 × 2 = 10). El operador <code>+</code> con un string concatena ("5" + 2 = "52"). Es la trampa más famosa de JavaScript.</div>
+
+  <h2 style="margin-top:24px">Solucionario — Ejercicio B</h2>
+  <table>
+    <tr><th style="width:22%">Elemento</th><th style="width:15%">Respuesta</th><th>Definición</th></tr>
+    <tr><td>1. <code>alert</code></td><td><strong>D</strong></td><td>Muestra un mensaje informativo sin devolver nada útil</td></tr>
+    <tr><td>2. <code>prompt</code></td><td><strong>E</strong></td><td>Pide un texto y devuelve string o null</td></tr>
+    <tr><td>3. <code>confirm</code></td><td><strong>B</strong></td><td>Devuelve true o false según el botón pulsado</td></tr>
+    <tr><td>4. <code>Number</code></td><td><strong>A</strong></td><td>Convierte un string a número (o NaN)</td></tr>
+    <tr><td>5. <code>isNaN</code></td><td><strong>C</strong></td><td>Detecta si un valor no es un número</td></tr>
+    <tr><td>6. <code>console.log</code></td><td><strong>F</strong></td><td>Herramienta de depuración en la consola del navegador</td></tr>
+  </table>
+
+  <h2 style="margin-top:24px">Solucionario — Ejercicio C</h2>
+  <div class="sol-item"><strong>C1.</strong> <code>alert</code></div>
+  <div class="sol-item"><strong>C2.</strong> Primer hueco: <code>Number</code> · Segundo hueco: <code>prompt</code></div>
+  <div class="sol-item"><strong>C3.</strong> <code>confirm</code></div>
+  <div class="sol-item"><strong>C4.</strong> <code>null</code></div>
+  <div class="sol-item"><strong>C5.</strong> <code>isNaN</code></div>
+  <div class="sol-item"><strong>C6.</strong> Primer hueco: <code>*</code> · Segundo hueco: <code>alert</code></div>
+  <div class="sol-item"><strong>C7.</strong> Primer hueco: <code>Number</code> · Segundo hueco: <code>isNaN</code></div>
+
+  <div class="page-footer"><span>Solucionario · Parte A, B, C</span><span>14</span></div>
+</section>
+
+<!-- ============================================================
+     SOLUCIONARIO D y E
+     ============================================================ -->
+<section class="page page-break">
+  <h2>Solucionario — Ejercicio D</h2>
+
+  <div class="sol-item"><strong>D1.</strong> Muestra <code>"string"</code>. <code>prompt</code> siempre devuelve string (o null), aunque escribas un número. <code>typeof "hola"</code> es <code>"string"</code>.</div>
+
+  <div class="sol-item"><strong>D2.</strong> Muestra <code>7</code>. <code>Number("3")</code> es <code>3</code> y <code>Number("4")</code> es <code>4</code>; ambos son números, así que <code>+</code> suma.</div>
+
+  <div class="sol-item"><strong>D3.</strong> Muestra <code>"34"</code>. Ambos son strings y <code>+</code> entre strings concatena.</div>
+
+  <div class="sol-item"><strong>D4.</strong> Muestra <code>"boolean"</code>. <code>confirm</code> devuelve <code>true</code> o <code>false</code>, y <code>typeof true</code> es <code>"boolean"</code>.</div>
+
+  <div class="sol-item"><strong>D5.</strong> Muestra <code>"51"</code>. <code>prompt</code> devolvió el string <code>"5"</code>; al sumar con <code>1</code> concatena. Para sumar: <code>Number(prompt("x")) + 1</code>.</div>
+
+  <div class="sol-item"><strong>D6.</strong> Muestra <code>10</code>. El operador <code>*</code> convierte <code>"5"</code> a número automáticamente y multiplica.</div>
+
+  <div class="sol-item"><strong>D7.</strong> Primer alert: <code>"100"</code> (concatena <code>"10" + "0"</code>). Segundo alert: <code>10</code> (multiplica <code>"10" * 1</code>). Muestra lo tramposo que es <code>+</code> frente a <code>*</code>.</div>
+
+  <h2 style="margin-top:24px">Solucionario — Ejercicio E</h2>
+
+  <div class="sol-item"><strong>E1.</strong> El error es que <code>a + b</code> concatena porque ambos son strings (<code>"5" + "3" = "53"</code>), y <code>"53" === 8</code> es falso. Corrección:
+    <pre><code><span class="kw">if</span> (<span class="kw">Number</span>(a) + <span class="kw">Number</span>(b) === <span class="num">8</span>) {
+  <span class="kw">alert</span>(<span class="st">"Es 8"</span>);
+}</code></pre>
+  </div>
+
+  <div class="sol-item"><strong>E2.</strong> Al cancelar, <code>nombre</code> es <code>null</code> y <code>null.toUpperCase()</code> lanza un <code>TypeError</code>, deteniendo el script. Corrección:
+    <pre><code><span class="kw">let</span> nombre = <span class="kw">prompt</span>(<span class="st">"Tu nombre:"</span>);
+<span class="kw">if</span> (nombre) {
+  <span class="kw">alert</span>(nombre.toUpperCase());
+} <span class="kw">else</span> {
+  <span class="kw">alert</span>(<span class="st">"No escribiste nombre"</span>);
+}</code></pre>
+    <code>null</code> y <code>""</code> son valores <em>falsy</em>, así que <code>if (nombre)</code> los descarta. Pero recuerda que el usuario <em>sí</em> podría haber querido escribir solo espacios: para eso, valida con <code>nombre.trim() !== ""</code>.
+  </div>
+
+  <div class="sol-item"><strong>E3.</strong> Usar <code>prompt</code> para una pregunta de sí/no es una mala elección porque el usuario puede escribir cualquier cosa (no hay restricción) y luego hay que parsear el texto. <code>confirm</code> está diseñado exactamente para eso. Corrección:
+    <pre><code><span class="kw">let</span> ok = <span class="kw">confirm</span>(<span class="st">"¿Eliminar el archivo?"</span>);
+<span class="kw">if</span> (ok) {
+  <span class="kw">alert</span>(<span class="st">"Eliminado"</span>);
+}</code></pre>
+  </div>
+
+  <div class="sol-item"><strong>E4.</strong> <code>prompt</code> devuelve string; <code>"20" + 10</code> = <code>"2010"</code>. Corregir convirtiendo:
+    <pre><code><span class="kw">let</span> edad = <span class="kw">Number</span>(<span class="kw">prompt</span>(<span class="st">"Edad:"</span>));
+<span class="kw">let</span> futura = edad + <span class="num">10</span>;
+<span class="kw">alert</span>(<span class="st">"En 10 años tendrás "</span> + futura);</code></pre>
+  </div>
+
+  <div class="sol-item"><strong>E5.</strong> El <code>else</code> está invertido: el <code>if (!ok)</code> se ejecuta cuando el usuario pulsa <em>Cancelar</em> (ok = false → !ok = true). Pero el mensaje "Saliendo..." se muestra en el bloque del <code>!ok</code>, así que aparece cuando el usuario <em>cancela</em>, no cuando acepta. Corrección:
+    <pre><code><span class="kw">if</span> (ok) {
+  <span class="kw">alert</span>(<span class="st">"Saliendo..."</span>);
+} <span class="kw">else</span> {
+  <span class="kw">alert</span>(<span class="st">"Sigues dentro"</span>);
+}</code></pre>
+  </div>
+
+  <div class="page-footer"><span>Solucionario · Parte D, E</span><span>15</span></div>
+</section>
+
+<!-- ============================================================
+     SOLUCIONARIO F, G, H, I
+     ============================================================ -->
+<section class="page page-break">
+  <h2>Solucionario — Ejercicio F</h2>
+
+  <div class="sol-item"><strong>F1.</strong> Orden correcto:
+    <br>1) Pedir la edad con prompt
+    <br>2) Convertir el valor con Number
+    <br>3) Comprobar con isNaN
+    <br>4) Mostrar el resultado con alert
+  </div>
+
+  <div class="sol-item"><strong>F2.</strong> Orden correcto:
+    <br>1) Llamar a confirm("¿Eliminar?")
+    <br>2) Guardar el resultado en una variable
+    <br>3) Si es true: mostrar "Eliminado"
+    <br>4) Si es false: mostrar "Cancelado"
+    <br><small>Nota: los pasos 3 y 4 son ramas del mismo if/else, así que su orden interno es intercambiable. Cualquiera de los dos órdenes vale siempre que ambos estén después de guardar la variable.</small>
+  </div>
+
+  <div class="sol-item"><strong>F3.</strong> Orden correcto:
+    <br>1) Pedir el nombre con prompt
+    <br>2) Si es null o vacío, mostrar error y terminar
+    <br>3) Preguntar con confirm si es correcto
+    <br>4) Mostrar "Hola, [nombre]"
+  </div>
+
+  <h2 style="margin-top:24px">Solucionario — Ejercicio G (soluciones modelo)</h2>
+
+  <div class="sol-item"><strong>G1 — Propina.</strong>
+    <pre><code><span class="kw">let</span> total = <span class="kw">Number</span>(<span class="kw">prompt</span>(<span class="st">"Total de la cuenta:"</span>));
+<span class="kw">let</span> pct = <span class="kw">Number</span>(<span class="kw">prompt</span>(<span class="st">"Porcentaje de propina:"</span>));
+
+<span class="kw">if</span> (<span class="kw">isNaN</span>(total) || <span class="kw">isNaN</span>(pct)) {
+  <span class="kw">alert</span>(<span class="st">"Datos inválidos"</span>);
+} <span class="kw">else</span> {
+  <span class="kw">let</span> propina = total * pct / <span class="num">100</span>;
+  <span class="kw">let</span> final_ = total + propina;
+  <span class="kw">alert</span>(<span class="st">`Propina: ${propina.toFixed(2)}€ · Total: ${final_.toFixed(2)}€`</span>);
+}</code></pre>
+  </div>
+
+  <div class="sol-item"><strong>G2 — Contraseña.</strong>
+    <pre><code><span class="kw">let</span> pwd = <span class="kw">prompt</span>(<span class="st">"Contraseña:"</span>);
+
+<span class="kw">if</span> (pwd === <span class="kw">null</span>) {
+  <span class="kw">alert</span>(<span class="st">"Cancelado"</span>);
+} <span class="kw">else if</span> (pwd.length &lt; <span class="num">8</span>) {
+  <span class="kw">alert</span>(<span class="st">"Debe tener al menos 8 caracteres"</span>);
+} <span class="kw">else</span> {
+  <span class="kw">let</span> ok = <span class="kw">confirm</span>(<span class="st">"¿Guardar la contraseña?"</span>);
+  <span class="kw">alert</span>(ok ? <span class="st">"Guardada"</span> : <span class="st">"No guardada"</span>);
+}</code></pre>
+  </div>
+
+  <div class="sol-item"><strong>G3 — Encuesta.</strong>
+    <pre><code><span class="kw">let</span> nombre = <span class="kw">prompt</span>(<span class="st">"Nombre:"</span>);
+<span class="kw">let</span> edad = <span class="kw">Number</span>(<span class="kw">prompt</span>(<span class="st">"Edad:"</span>));
+
+<span class="kw">if</span> (<span class="kw">isNaN</span>(edad)) {
+  <span class="kw">alert</span>(<span class="st">"Edad inválida"</span>);
+} <span class="kw">else if</span> (edad &gt;= <span class="num">18</span>) {
+  <span class="kw">let</span> info = <span class="kw">confirm</span>(<span class="st">"¿Quieres recibir información?"</span>);
+  <span class="kw">alert</span>(info ? <span class="st">`¡Gracias, ${nombre}!`</span> : <span class="st">"De acuerdo"</span>);
+} <span class="kw">else</span> {
+  <span class="kw">alert</span>(<span class="st">"Los menores no pueden participar"</span>);
+}</code></pre>
+  </div>
+
+  <div class="sol-item"><strong>G4 — Conversor.</strong>
+    <pre><code><span class="kw">let</span> eur = <span class="kw">Number</span>(<span class="kw">prompt</span>(<span class="st">"Euros:"</span>));
+<span class="kw">let</span> tasa = <span class="kw">Number</span>(<span class="kw">prompt</span>(<span class="st">"Tasa de cambio:"</span>));
+
+<span class="kw">if</span> (<span class="kw">isNaN</span>(eur) || <span class="kw">isNaN</span>(tasa)) {
+  <span class="kw">alert</span>(<span class="st">"Datos inválidos"</span>);
+} <span class="kw">else</span> {
+  <span class="kw">let</span> res = (eur * tasa).toFixed(<span class="num">2</span>);
+  <span class="kw">let</span> ok = <span class="kw">confirm</span>(<span class="st">`¿Mostrar ${res}?`</span>);
+  <span class="kw">if</span> (ok) <span class="kw">alert</span>(<span class="st">`Total: ${res}`</span>);
+}</code></pre>
+  </div>
+
+  <div class="sol-item"><strong>G5 — Cajero.</strong>
+    <pre><code><span class="kw">let</span> imp = <span class="kw">Number</span>(<span class="kw">prompt</span>(<span class="st">"Importe a retirar:"</span>));
+
+<span class="kw">if</span> (<span class="kw">isNaN</span>(imp) || imp &lt;= <span class="num">0</span>) {
+  <span class="kw">alert</span>(<span class="st">"Importe inválido"</span>);
+} <span class="kw">else if</span> (imp &gt; <span class="num">100</span>) {
+  <span class="kw">alert</span>(<span class="st">"Supera el límite de 100€"</span>);
+} <span class="kw">else</span> {
+  <span class="kw">let</span> ok = <span class="kw">confirm</span>(<span class="st">`¿Retirar ${imp}€?`</span>);
+  <span class="kw">alert</span>(ok ? <span class="st">"Retirado"</span> : <span class="st">"Cancelado"</span>);
+}</code></pre>
+  </div>
+
+  <div class="page-footer"><span>Solucionario · Parte F, G</span><span>16</span></div>
+</section>
+
+<!-- ============================================================
+     SOLUCIONARIO H, I
+     ============================================================ -->
+<section class="page page-break">
+  <h2>Solucionario — Ejercicio H</h2>
+
+  <div class="sol-item"><strong>H1 — Traza.</strong>
+    <table style="margin-top:6px">
+      <tr><th>Paso</th><th>a</th><th>b</th><th>suma</th><th>doble</th><th>ok</th></tr>
+      <tr><td>Tras leer a</td><td>"4"</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+      <tr><td>Tras leer b</td><td>"4"</td><td>"6"</td><td>—</td><td>—</td><td>—</td></tr>
+      <tr><td>Tras suma</td><td>"4"</td><td>"6"</td><td>10</td><td>—</td><td>—</td></tr>
+      <tr><td>Tras doble</td><td>"4"</td><td>"6"</td><td>10</td><td>20</td><td>—</td></tr>
+      <tr><td>Tras ok</td><td>"4"</td><td>"6"</td><td>10</td><td>20</td><td>true</td></tr>
+    </table>
+    El alert muestra <code>"Suma: 10, doble: 20"</code>.
+  </div>
+
+  <div class="sol-item"><strong>H2 — Traza con validación.</strong>
+    <table style="margin-top:6px">
+      <tr><th>Paso</th><th>entrada</th><th>n</th><th>isNaN(n)</th></tr>
+      <tr><td>Tras prompt</td><td>"hola"</td><td>—</td><td>—</td></tr>
+      <tr><td>Tras Number</td><td>"hola"</td><td>NaN</td><td>—</td></tr>
+      <tr><td>Al evaluar if</td><td>"hola"</td><td>NaN</td><td>true</td></tr>
+    </table>
+    Se ejecuta la rama <code>if</code> y muestra <code>"Dato inválido"</code>.
+  </div>
+
+  <div class="sol-item"><strong>H3 — Traza con cancelación.</strong>
+    <p>Se ejecuta la <strong>primera rama</strong> (<code>nombre === null</code>), porque al cancelar <code>prompt</code> devuelve <code>null</code> exactamente. El usuario ve <code>"Cancelaste"</code>.</p>
+    <p>Las comprobaciones van en ese orden por seguridad: <code>null</code> es el caso especial que hay que detectar <em>primero</em>. Si comprobáramos <code>nombre === ""</code> antes, <code>null === ""</code> es <code>false</code> y podríamos caer en la rama <code>else</code> sin querer. Además, si intentáramos hacer <code>nombre.trim()</code> sobre <code>null</code>, el script se rompería. Por eso <strong>siempre valida primero el <code>null</code></strong>.</p>
+  </div>
+
+  <h2 style="margin-top:24px">Solucionario — Ejercicio I</h2>
+  <p><small>Hay muchas soluciones válidas. Esta es una posible, con todas las validaciones:</small></p>
+
+  <div class="sol-item">
+    <pre><code><span class="cm">// 1. Nombre</span>
+<span class="kw">let</span> nombre = <span class="kw">prompt</span>(<span class="st">"Nombre del cliente:"</span>);
+<span class="kw">if</span> (!nombre || nombre.trim() === <span class="st">""</span>) {
+  <span class="kw">alert</span>(<span class="st">"Nombre inválido"</span>);
+} <span class="kw">else</span> {
+  <span class="cm">// 2. Edad</span>
+  <span class="kw">let</span> edad = <span class="kw">Number</span>(<span class="kw">prompt</span>(<span class="st">"Edad:"</span>));
+  <span class="cm">// 3. Entradas</span>
+  <span class="kw">let</span> n = <span class="kw">Number</span>(<span class="kw">prompt</span>(<span class="st">"Número de entradas:"</span>));
+
+  <span class="kw">if</span> (<span class="kw">isNaN</span>(edad) || <span class="kw">isNaN</span>(n) || n &lt; <span class="num">1</span>) {
+    <span class="kw">alert</span>(<span class="st">"Datos inválidos"</span>);
+  } <span class="kw">else</span> {
+    <span class="cm">// 4. Menor de edad</span>
+    <span class="kw">let</span> menor = edad &lt; <span class="num">18</span>;
+    <span class="kw">if</span> (menor) {
+      <span class="kw">let</span> acomp = <span class="kw">confirm</span>(<span class="st">"Eres menor, ¿vas acompañado?"</span>);
+      <span class="kw">if</span> (!acomp) {
+        <span class="kw">alert</span>(<span class="st">"No puedes entrar sin acompañante"</span>);
+        <span class="cm">// salir: podríamos envolver el resto en un if</span>
+      } <span class="kw">else</span> {
+        <span class="kw">let</span> precio = menor ? <span class="num">4</span> : <span class="num">6</span>;
+        <span class="kw">let</span> total = precio * n;
+        <span class="kw">if</span> (<span class="kw">confirm</span>(<span class="st">`Total ${total}€. ¿Confirmar reserva?`</span>)) {
+          <span class="kw">alert</span>(<span class="st">`Reserva OK: ${nombre}, ${n} entradas, ${total}€`</span>);
+        }
+      }
+    } <span class="kw">else</span> {
+      <span class="kw">let</span> precio = <span class="num">6</span>;
+      <span class="kw">let</span> total = precio * n;
+      <span class="kw">if</span> (<span class="kw">confirm</span>(<span class="st">`Total ${total}€. ¿Confirmar reserva?`</span>)) {
+        <span class="kw">alert</span>(<span class="st">`Reserva OK: ${nombre}, ${n} entradas, ${total}€`</span>);
+      }
+    }
+  }
+}</code></pre>
+    <p><small>Puntos clave de evaluación: ¿validaste el <code>null</code> del nombre? ¿convertiste edad y entradas con <code>Number</code>? ¿validaste <code>isNaN</code>? ¿usaste <code>confirm</code> para las decisiones? ¿mostraste un resumen claro?</small></p>
+  </div>
+
+  <h2 style="margin-top:16px">Solucionario — Ejercicio J</h2>
+  <p><small>No hay respuestas "correctas" únicas: las respuestas personales dependen de cada alumno. Algunos ejemplos habituales:</small></p>
+
+  <div class="sol-item"><strong>J1.</strong> Los ejercicios más costosos suelen ser <strong>E1</strong> (comparación string vs número) y <strong>D7</strong> (comportamiento distinto de <code>+</code> y <code>*</code>). La razón habitual: intuimos que "JavaScript hace lo que queremos" y olvidamos que <code>+</code> es ambiguo.</div>
+
+  <div class="sol-item"><strong>J2.</strong> Un patrón frecuente: <em>creer que <code>confirm</code> devuelve el texto del botón ("Sí"/"No")</em>. La predicción falla porque confundimos lo que <em>vemos</em> (los botones) con lo que <em>devuelve la función</em> (un booleano). El antídoto es preguntarse siempre: <em>¿qué tipo de dato devuelve esta función?</em></div>
+
+  <div class="sol-item"><strong>J3.</strong> Reglas mnemotécnicas que suelen funcionar:
+    <ul style="margin:6px 0">
+      <li><strong>alert</strong> = <em>"te aviso"</em> (informativo)</li>
+      <li><strong>prompt</strong> = <em>"te pregunto un dato"</em> (entrada de texto)</li>
+      <li><strong>confirm</strong> = <em>"te pido confirmación sí/no"</em> (booleano)</li>
+      <li>Truco: <strong>a</strong>lert → <strong>a</strong>viso · <strong>p</strong>rompt → <strong>p</strong>ido · <strong>c</strong>onfirm → <strong>c</strong>onfirmo.</li>
+    </ul>
+  </div>
+
+  <div class="sol-item"><strong>J4.</strong> Antes de pasar a formularios HTML conviene dominar: (1) conversión string→número, (2) validación de <code>null</code> y <code>isNaN</code>, (3) <code>if/else</code> encadenado, (4) el patrón <code>prompt → validar → confirm → alert</code>. Con eso, el salto a <code>addEventListener</code> + <code>document.getElementById</code> es natural.</div>
+
+  <div class="page-footer"><span>Solucionario · Parte H, I, J</span><span>17</span></div>
+</section>
+
+<!-- ============================================================
+     CIERRE
+     ============================================================ -->
+<section class="page page-break">
+  <div style="text-align:center; margin-top:60mm">
+    <div style="font-size:50pt; letter-spacing:15px; margin-bottom:30px">🎓</div>
+    <h1 style="color: var(--primary)">¡Felicidades!</h1>
+    <p style="font-size:13pt; max-width:500px; margin:20px auto; color:var(--muted)">
+      Has completado el cuaderno de <strong>alert, prompt y confirm</strong>. Recuerda:
+    </p>
+    <div style="text-align:left; max-width:500px; margin:30px auto; font-size:11pt;">
+      <p>✅ Lo que dominas ahora:</p>
+      <ul>
+        <li>Qué devuelve exactamente cada función.</li>
+        <li>Por qué <code>prompt</code> y <code>+</code> son una combinación peligrosa.</li>
+        <li>Cómo validar <code>null</code>, <code>""</code> y <code>NaN</code>.</li>
+        <li>El patrón <code>prompt → validar → confirm → alert</code>.</li>
+        <li>Cómo detectar bugs típicos en código ajeno.</li>
+      </ul>
+      <p style="margin-top:20px">🚀 Próximo paso: sustituir estos diálogos por <strong>formularios HTML</strong> con <code>addEventListener</code> y <code>document.getElementById</code>. Es lo que se usa en aplicaciones reales.</p>
+    </div>
+    <div style="margin-top:40px; padding-top:30px; border-top:1px solid var(--border); font-size:9pt; color:var(--muted)">
+      Cuaderno autocontenido · Sin dependencias · Repaso espaciado recomendado: hoy, mañana, 3 días, 1 semana, 2 semanas.
+    </div>
+  </div>
+
+  <div class="page-footer"><span>Cierre · ¡Sigue practicando!</span><span>18</span></div>
+</section>
+
+<script>
+  // Todo es estático. El único JS es el botón de imprimir.
+  // (No se necesita más lógica en un cuaderno imprimible.)
+</script>
+</body>
+</html>
