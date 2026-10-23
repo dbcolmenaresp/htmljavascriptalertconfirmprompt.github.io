@@ -1,0 +1,1758 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>⚡ Cómo insertar JavaScript en HTML — Laboratorio Interactivo</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f8fafc;
+    --text: #0f172a;
+    --muted: #64748b;
+    --primary: #0d9488;
+    --primary-dark: #0f766e;
+    --primary-soft: #f0fdfa;
+    --inline: #f59e0b;
+    --inline-soft: #fffbeb;
+    --internal: #10b981;
+    --internal-soft: #ecfdf5;
+    --external: #6366f1;
+    --external-soft: #eef2ff;
+    --accent: #ec4899;
+    --border: #e2e8f0;
+    --card: #ffffff;
+    --success: #16a34a;
+    --error: #dc2626;
+    --code-bg: #0f172a;
+    --code-text: #e2e8f0;
+  }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.65;
+    padding-bottom: 5rem;
+  }
+  code {
+    font-family: 'SF Mono', Consolas, 'Liberation Mono', Menlo, monospace;
+    background: var(--primary-soft);
+    color: var(--primary-dark);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.9em;
+  }
+  pre {
+    background: var(--code-bg);
+    color: var(--code-text);
+    padding: 1.1rem 1.3rem;
+    border-radius: 10px;
+    overflow-x: auto;
+    font-size: 0.9rem;
+    line-height: 1.55;
+    margin: 0.8rem 0;
+    border-left: 4px solid var(--primary);
+  }
+  pre code { background: none; color: inherit; padding: 0; }
+  pre .kw { color: #c792ea; font-weight: 600; }
+  pre .st { color: #c3e88d; }
+  pre .cm { color: #6b7280; font-style: italic; }
+  pre .num { color: #f78c6c; }
+  pre .tag { color: #89ddff; }
+  pre .attr { color: #f07178; }
+
+  /* Progress */
+  .progress-wrap {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 20px;
+    display: flex; align-items: center; gap: 16px;
+  }
+  .progress-bar-bg { flex: 1; height: 10px; background: #e2e8f0; border-radius: 10px; overflow: hidden; }
+  .progress-fill {
+    height: 100%; width: 0%;
+    background: linear-gradient(90deg, #0d9488, #10b981, #6366f1);
+    border-radius: 10px;
+    transition: width 0.5s ease;
+  }
+  .progress-label { font-size: 0.85rem; font-weight: 600; color: var(--muted); white-space: nowrap; }
+
+  /* Hero */
+  .hero {
+    padding: 110px 20px 60px;
+    background: linear-gradient(135deg, #042f2e 0%, #134e4a 40%, #1e3a8a 100%);
+    color: white;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(circle at 20% 40%, rgba(13,148,136,0.45) 0%, transparent 55%),
+                radial-gradient(circle at 80% 30%, rgba(99,102,241,0.35) 0%, transparent 55%);
+  }
+  .hero-content { position: relative; max-width: 900px; margin: 0 auto; }
+  .badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.3);
+    padding: 6px 14px;
+    border-radius: 100px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+  }
+  .hero h1 {
+    font-size: clamp(2rem, 5vw, 3rem);
+    margin-bottom: 16px;
+    line-height: 1.15;
+    letter-spacing: -1px;
+  }
+  .subtitle { font-size: 1.12rem; opacity: 0.92; margin-bottom: 26px; }
+  .subtitle code { background: rgba(255,255,255,0.2); color: #fbbf24; padding: 2px 8px; }
+  .tech-pills { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+  .tech-pills span {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    padding: 6px 14px; border-radius: 100px; font-size: 0.85rem;
+  }
+
+  /* Container */
+  .container { max-width: 920px; margin: 0 auto; padding: 40px 20px; }
+
+  /* Cards */
+  .card {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 10px 30px -10px rgba(0,0,0,0.1);
+    border: 1px solid var(--border);
+  }
+  .card.module { border-top: 4px solid var(--primary); }
+  .card.inline-card { border-top-color: var(--inline); }
+  .card.internal-card { border-top-color: var(--internal); }
+  .card.external-card { border-top-color: var(--external); }
+  .card h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    display: flex; align-items: center; gap: 10px;
+    line-height: 1.3;
+  }
+  .card h3 { font-size: 1.12rem; margin: 1.5rem 0 0.6rem; color: var(--primary-dark); }
+  .card h4 { font-size: 1rem; margin: 1.1rem 0 0.5rem; }
+  .card p { margin-bottom: 0.9rem; }
+  .card ul, .card ol { padding-left: 1.5rem; margin-bottom: 1rem; }
+  .card li { margin-bottom: 0.4rem; }
+
+  .module-num {
+    display: inline-flex;
+    align-items: center; justify-content: center;
+    width: 34px; height: 34px;
+    background: var(--primary); color: white;
+    border-radius: 10px;
+    font-weight: 700; font-size: 0.95rem;
+    flex-shrink: 0;
+  }
+  .inline-card .module-num { background: var(--inline); }
+  .internal-card .module-num { background: var(--internal); }
+  .external-card .module-num { background: var(--external); }
+
+  /* Callouts */
+  .callout {
+    background: var(--primary-soft);
+    border-left: 4px solid var(--primary);
+    padding: 1rem 1.2rem;
+    border-radius: 8px;
+    margin: 1rem 0;
+    font-size: 0.95rem;
+  }
+  .callout.warn { background: var(--inline-soft); border-color: var(--inline); }
+  .callout.danger { background: #fee2e2; border-color: var(--error); }
+  .callout.success { background: var(--internal-soft); border-color: var(--success); }
+  .callout.info { background: var(--external-soft); border-color: var(--external); }
+  .callout strong { display: block; margin-bottom: 4px; }
+
+  /* Prediction */
+  .predict {
+    background: linear-gradient(135deg, var(--primary-soft), #ccfbf1);
+    border: 2px dashed #5eead4;
+    border-radius: 12px;
+    padding: 1.3rem;
+    margin: 1.2rem 0;
+  }
+  .predict .tag {
+    display: inline-block;
+    background: var(--primary-dark); color: white;
+    padding: 3px 10px; border-radius: 100px;
+    font-size: 0.75rem; font-weight: 700;
+    letter-spacing: 0.5px;
+    margin-bottom: 10px;
+  }
+  .predict textarea {
+    width: 100%; min-height: 60px;
+    padding: 10px; border: 1.5px solid #5eead4;
+    border-radius: 8px; font-family: inherit;
+    font-size: 0.9rem; resize: vertical;
+    background: white;
+  }
+  .predict textarea:focus { outline: none; border-color: var(--primary); }
+
+  /* Confidence */
+  .confidence { display: flex; align-items: center; gap: 6px; margin: 10px 0; flex-wrap: wrap; }
+  .confidence-label { font-size: 0.85rem; color: var(--muted); margin-right: 6px; }
+  .conf-btn {
+    background: white; border: 1.5px solid #5eead4;
+    color: var(--primary-dark); width: 32px; height: 32px;
+    border-radius: 8px; cursor: pointer;
+    font-weight: 700; font-size: 0.85rem;
+    transition: all 0.2s;
+  }
+  .conf-btn:hover { background: var(--primary-soft); }
+  .conf-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 20px;
+    border: none; border-radius: 10px;
+    font-weight: 600; font-size: 0.92rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn-primary { background: var(--primary); color: white; }
+  .btn-primary:hover { background: var(--primary-dark); }
+  .btn-reveal { background: var(--primary-dark); color: white; }
+  .btn-reveal:hover { background: var(--primary); }
+  .btn-demo { background: linear-gradient(135deg, #0d9488, #10b981); color: white; }
+  .btn-demo:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(13,148,136,0.4); }
+  .btn-demo.inline { background: linear-gradient(135deg, #f59e0b, #f97316); }
+  .btn-demo.internal { background: linear-gradient(135deg, #10b981, #059669); }
+  .btn-demo.external { background: linear-gradient(135deg, #6366f1, #8b5cf6); }
+  .btn-done {
+    background: white; color: var(--primary); border: 2px solid var(--primary);
+    padding: 10px 20px; border-radius: 10px; font-weight: 700;
+    cursor: pointer; font-family: inherit; font-size: 0.9rem;
+    transition: all 0.2s; margin-top: 1rem;
+  }
+  .btn-done:hover { background: var(--primary); color: white; }
+  .btn-done.done { background: var(--success); border-color: var(--success); color: white; }
+
+  /* Answer reveal */
+  .answer {
+    margin-top: 12px;
+    background: white; border: 1.5px solid #5eead4;
+    border-radius: 10px; padding: 14px;
+    font-size: 0.95rem;
+    animation: fadeIn 0.4s ease;
+  }
+  .answer strong { color: var(--primary-dark); }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .hidden { display: none !important; }
+
+  /* Table */
+  table {
+    width: 100%; border-collapse: collapse;
+    margin: 1rem 0; font-size: 0.92rem;
+    background: white; border-radius: 10px; overflow: hidden;
+    box-shadow: 0 0 0 1px var(--border);
+  }
+  th { background: var(--primary); color: white; padding: 12px; text-align: left; font-weight: 600; }
+  td { padding: 12px; border-top: 1px solid var(--border); }
+  tr:nth-child(even) td { background: #f8fafc; }
+  tr:hover td { background: var(--primary-soft); }
+  .table-inline th { background: var(--inline); }
+  .table-internal th { background: var(--internal); }
+  .table-external th { background: var(--external); }
+
+  /* Demo box */
+  .demo-box {
+    background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    padding: 1.2rem;
+    margin: 1rem 0;
+  }
+  .demo-box h4 { margin-top: 0; color: var(--primary-dark); }
+  .demo-output {
+    background: white;
+    border-left: 4px solid var(--primary);
+    border-radius: 6px;
+    padding: 10px 14px;
+    margin: 10px 0;
+    font-family: 'SF Mono', Consolas, monospace;
+    font-size: 0.9rem;
+    min-height: 40px;
+    color: var(--muted);
+  }
+  .demo-output.active { color: var(--text); background: var(--internal-soft); border-color: var(--success); }
+
+  /* Method cards (comparison) */
+  .method-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; margin: 1.2rem 0; }
+  .method-card {
+    border-radius: 14px;
+    padding: 1.3rem;
+    border: 2px solid;
+    transition: transform 0.2s;
+  }
+  .method-card:hover { transform: translateY(-3px); }
+  .method-card.inline { border-color: var(--inline); background: var(--inline-soft); }
+  .method-card.internal { border-color: var(--internal); background: var(--internal-soft); }
+  .method-card.external { border-color: var(--external); background: var(--external-soft); }
+  .method-card h3 { margin-top: 0 !important; }
+  .method-card .emoji { font-size: 1.8rem; margin-bottom: 6px; display: block; }
+  .method-card ul { font-size: 0.88rem; margin-bottom: 0; }
+
+  /* Scenario matcher */
+  .scenario-matcher {
+    background: linear-gradient(135deg, #ecfeff, #ccfbf1);
+    border: 2px solid #5eead4;
+    border-radius: 12px;
+    padding: 1.3rem;
+    margin: 1.2rem 0;
+  }
+  .scenario-matcher select {
+    width: 100%; padding: 10px 12px;
+    border: 1.5px solid #5eead4; border-radius: 8px;
+    font-family: inherit; font-size: 0.95rem;
+    background: white; cursor: pointer;
+  }
+  .recommendation {
+    margin-top: 14px;
+    background: white;
+    border-radius: 10px;
+    padding: 14px;
+    border-left: 4px solid var(--primary);
+    animation: fadeIn 0.4s ease;
+  }
+  .recommendation h4 { margin-top: 0; color: var(--primary-dark); }
+
+  /* Timeline */
+  .timeline-container {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.3rem;
+    margin: 1.2rem 0;
+    overflow-x: auto;
+  }
+  .timeline-tabs {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    margin-bottom: 1.2rem;
+  }
+  .timeline-tab {
+    padding: 8px 14px;
+    border: 1.5px solid var(--border);
+    background: white;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--muted);
+    transition: all 0.2s;
+  }
+  .timeline-tab:hover { border-color: var(--primary); color: var(--primary); }
+  .timeline-tab.active { background: var(--primary); color: white; border-color: var(--primary); }
+  .gantt { min-width: 500px; }
+  .gantt-row {
+    display: flex; align-items: center;
+    margin-bottom: 8px;
+    height: 42px;
+  }
+  .gantt-label {
+    width: 100px; flex-shrink: 0;
+    font-size: 0.8rem; font-weight: 600;
+    color: var(--muted);
+    text-align: right;
+    padding-right: 12px;
+  }
+  .gantt-bar {
+    flex: 1;
+    height: 32px;
+    background: #f1f5f9;
+    border-radius: 6px;
+    position: relative;
+    border: 1px solid var(--border);
+  }
+  .gantt-block {
+    position: absolute;
+    top: 0; bottom: 0;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    color: white;
+    font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+    padding: 0 6px;
+    overflow: hidden;
+    white-space: nowrap;
+    animation: growIn 0.5s ease both;
+  }
+  @keyframes growIn {
+    from { opacity: 0; transform: scaleX(0.3); transform-origin: left; }
+    to { opacity: 1; transform: scaleX(1); transform-origin: left; }
+  }
+  .gantt-block.html { background: linear-gradient(135deg, #0d9488, #14b8a6); }
+  .gantt-block.html-paused { background: repeating-linear-gradient(45deg, #94a3b8, #94a3b8 6px, #cbd5e1 6px, #cbd5e1 12px); }
+  .gantt-block.download { background: linear-gradient(135deg, #6366f1, #8b5cf6); }
+  .gantt-block.execute { background: linear-gradient(135deg, #f59e0b, #ef4444); }
+  .gantt-desc {
+    background: var(--primary-soft);
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 0.9rem;
+    margin-top: 12px;
+    border-left: 3px solid var(--primary);
+  }
+  .gantt-legend {
+    display: flex; flex-wrap: wrap; gap: 14px;
+    margin-top: 10px; font-size: 0.8rem; color: var(--muted);
+  }
+  .gantt-legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .legend-dot { width: 14px; height: 14px; border-radius: 3px; }
+
+  /* Sandbox */
+  .sandbox-wrap {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin: 1rem 0;
+  }
+  @media (max-width: 700px) { .sandbox-wrap { grid-template-columns: 1fr; } }
+  .sandbox-editor, .sandbox-preview {
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--code-bg);
+  }
+  .sandbox-editor textarea {
+    width: 100%;
+    min-height: 320px;
+    background: var(--code-bg);
+    color: var(--code-text);
+    border: none;
+    padding: 14px;
+    font-family: 'SF Mono', Consolas, monospace;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    resize: vertical;
+  }
+  .sandbox-editor textarea:focus { outline: none; }
+  .sandbox-preview iframe {
+    width: 100%;
+    min-height: 320px;
+    border: none;
+    background: white;
+  }
+  .sandbox-toolbar {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 8px 12px;
+    background: #1e293b;
+    color: #cbd5e1;
+    font-size: 0.8rem;
+    font-family: 'SF Mono', Consolas, monospace;
+  }
+  .sandbox-toolbar button {
+    background: var(--success);
+    color: white;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.8rem;
+  }
+  .sandbox-toolbar button:hover { background: #15803d; }
+
+  /* Quiz */
+  .quiz-q {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.2rem 1.4rem;
+    margin-bottom: 1rem;
+  }
+  .quiz-q .q-text { font-weight: 600; margin-bottom: 12px; }
+  .quiz-opt {
+    display: block;
+    padding: 10px 14px;
+    background: #f8fafc;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+    font-size: 0.92rem;
+    text-align: left;
+    width: 100%;
+  }
+  .quiz-opt:hover { border-color: var(--primary); background: var(--primary-soft); }
+  .quiz-opt.correct { background: #dcfce7; border-color: var(--success); color: #166534; font-weight: 600; }
+  .quiz-opt.wrong { background: #fee2e2; border-color: var(--error); color: #991b1b; }
+  .quiz-opt:disabled { cursor: not-allowed; }
+  .quiz-feedback {
+    margin-top: 10px;
+    font-size: 0.9rem;
+    padding: 10px 12px;
+    border-radius: 8px;
+    display: none;
+  }
+  .quiz-feedback.show { display: block; animation: fadeIn 0.3s ease; }
+  .quiz-feedback.ok { background: #dcfce7; color: #166534; }
+  .quiz-feedback.ko { background: #fee2e2; color: #991b1b; }
+
+  /* Feynman */
+  .feynman-area {
+    width: 100%; min-height: 140px;
+    padding: 14px;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    resize: vertical;
+    line-height: 1.6;
+  }
+  .feynman-area:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(13,148,136,0.15); }
+  .word-count { font-size: 0.82rem; color: var(--muted); margin-top: 6px; text-align: right; }
+
+  /* DOM Tree */
+  .dom-tree {
+    background: var(--primary-soft);
+    border: 1px solid #5eead4;
+    border-radius: 12px;
+    padding: 1.2rem;
+    margin: 1rem 0;
+    font-family: 'SF Mono', Consolas, monospace;
+    font-size: 0.9rem;
+  }
+  .dom-node {
+    display: inline-block;
+    background: white;
+    border: 1.5px solid var(--primary);
+    border-radius: 6px;
+    padding: 4px 10px;
+    margin: 3px;
+    color: var(--primary-dark);
+    font-weight: 600;
+  }
+  .dom-node.root { background: var(--primary); color: white; }
+  .dom-node.leaf { border-color: var(--muted); color: var(--muted); font-weight: 500; }
+  .dom-indent { margin-left: 24px; }
+
+  /* Nav dots */
+  .nav-dots { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 20px 0 40px; }
+  .nav-dots a {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    background: white;
+    border: 1.5px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    text-decoration: none; color: var(--muted);
+    font-weight: 700; font-size: 0.85rem;
+    transition: all 0.2s;
+  }
+  .nav-dots a:hover, .nav-dots a.completed {
+    background: var(--primary); color: white; border-color: var(--primary);
+  }
+
+  /* Footer */
+  footer {
+    text-align: center; padding: 40px 20px;
+    color: var(--muted); font-size: 0.9rem;
+    border-top: 1px solid var(--border);
+    margin-top: 40px;
+  }
+
+  @media (max-width: 600px) {
+    .card { padding: 1.4rem; }
+    .hero { padding: 100px 16px 40px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Progress Bar -->
+<div class="progress-wrap">
+  <div class="progress-bar-bg"><div class="progress-fill" id="progressFill"></div></div>
+  <div class="progress-label" id="progressLabel">0 / 11 módulos</div>
+</div>
+
+<!-- Hero -->
+<header class="hero">
+  <div class="hero-content">
+    <div class="badge">Material didáctico metacognitivo · nivel: principiante</div>
+    <h1>⚡ Cómo insertar JavaScript en HTML</h1>
+    <p class="subtitle">Inline · Internal · External — <code>defer</code>, <code>async</code> y todo lo que necesitas para hacerlo bien</p>
+    <div class="tech-pills">
+      <span>🎯 Predicción</span>
+      <span>🔁 Recuperación activa</span>
+      <span>🧩 Autoexplicación</span>
+      <span>⚡ Simuladores en vivo</span>
+      <span>👨‍🏫 Feynman</span>
+      <span>🔍 Análisis de errores</span>
+      <span>📅 Repaso espaciado</span>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+
+  <!-- Cómo usar -->
+  <section class="card">
+    <h2>📖 Antes de empezar: cómo exprimir este material</h2>
+    <p>Este material está diseñado para que aprendas <strong>activamente</strong>. Cada módulo activa una técnica basada en ciencia del aprendizaje:</p>
+    <table>
+      <tr><th>Técnica</th><th>Qué vas a hacer</th><th>Por qué funciona</th></tr>
+      <tr><td>🎯 Predicción</td><td>Adivinar resultados antes de verlos</td><td>El error previo consolida más que el acierto</td></tr>
+      <tr><td>🔁 Recuperación activa</td><td>Responder sin mirar atrás</td><td>Recordar fortalece la memoria más que releer</td></tr>
+      <tr><td>⚡ Simuladores</td><td>Ejecutar código en vivo y ver qué pasa</td><td>Feedback inmediato y experimentación guiada</td></tr>
+      <tr><td>🔍 Análisis de errores</td><td>Detectar bugs y explicar por qué</td><td>Evita que los repitas y consolida el modelo</td></tr>
+      <tr><td>👨‍🏫 Feynman</td><td>Explicarlo como si enseñaras</td><td>Enseñar es la forma más potente de aprender</td></tr>
+      <tr><td>📅 Repaso espaciado</td><td>Planificar repasos en el tiempo</td><td>Espaciar multiplica la retención</td></tr>
+    </table>
+    <div class="callout success">
+      <strong>💡 Regla de oro</strong>
+      Escribe tus predicciones <em>aunque no estés seguro</em>. Los demos funcionan de verdad: pruébalos todos.
+    </div>
+  </section>
+
+  <!-- Navegación -->
+  <div class="nav-dots" id="navDots"></div>
+
+  <!-- ============================================================ -->
+  <!-- MÓDULO 0: PRE-TEST -->
+  <!-- ============================================================ -->
+  <section class="card module" id="mod-0" data-module="0">
+    <h2><span class="module-num">0</span> Pre-test: lo que crees saber</h2>
+    <p>Antes de aprender, intenta responder. <strong>Aunque falles, el intento prepara tu cerebro para aprender mejor</strong> (efecto <em>pretesting</em>).</p>
+
+    <div class="predict">
+      <span class="tag">PREDICCIÓN 1</span>
+      <p>¿Cuántas formas distintas existen de insertar JavaScript en un HTML?</p>
+      <textarea placeholder="Escribe tu respuesta..."></textarea>
+      <div class="confidence">
+        <span class="confidence-label">Confianza:</span>
+        <button class="conf-btn">1</button><button class="conf-btn">2</button><button class="conf-btn">3</button><button class="conf-btn">4</button><button class="conf-btn">5</button>
+      </div>
+      <button class="btn btn-reveal" onclick="reveal(this)">Ver respuesta</button>
+      <div class="answer hidden"><strong>Respuesta:</strong> hay tres formas principales: <strong>inline</strong> (atributos como <code>onclick</code>), <strong>interna</strong> (etiqueta <code>&lt;script&gt;</code> dentro del HTML) y <strong>externa</strong> (<code>&lt;script src="archivo.js"&gt;</code>). Además hay variantes con <code>defer</code>, <code>async</code> y <code>type="module"</code>.</div>
+    </div>
+
+    <div class="predict">
+      <span class="tag">PREDICCIÓN 2</span>
+      <p>¿Dónde se recomienda colocar la etiqueta <code>&lt;script src="app.js"&gt;</code> si NO usas <code>defer</code> ni <code>async</code>?</p>
+      <textarea placeholder="Escribe tu respuesta..."></textarea>
+      <div class="confidence">
+        <span class="confidence-label">Confianza:</span>
+        <button class="conf-btn">1</button><button class="conf-btn">2</button><button class="conf-btn">3</button><button class="conf-btn">4</button><button class="conf-btn">5</button>
+      </div>
+      <button class="btn btn-reveal" onclick="reveal(this)">Ver respuesta</button>
+      <div class="answer hidden"><strong>Respuesta:</strong> al <strong>final del <code>&lt;body&gt;</code></strong>. Si lo pones en el <code>&lt;head&gt;</code> sin atributos, el navegador descarga y ejecuta el script ANTES de parsear el resto del HTML, bloqueando la página (el usuario ve pantalla en blanco hasta que termina).</div>
+    </div>
+
+    <div class="predict">
+      <span class="tag">PREDICCIÓN 3</span>
+      <p>¿Qué diferencia hay entre <code>defer</code> y <code>async</code>?</p>
+      <textarea placeholder="Escribe tu respuesta..."></textarea>
+      <div class="confidence">
+        <span class="confidence-label">Confianza:</span>
+        <button class="conf-btn">1</button><button class="conf-btn">2</button><button class="conf-btn">3</button><button class="conf-btn">4</button><button class="conf-btn">5</button>
+      </div>
+      <button class="btn btn-reveal" onclick="reveal(this)">Ver respuesta</button>
+      <div class="answer hidden"><strong>Respuesta:</strong> ambos descargan el script <strong>en paralelo</strong> mientras se parsea el HTML. La diferencia es <em>cuándo se ejecuta</em>: <br>• <code>defer</code> → después de terminar de parsear el HTML, <strong>en orden</strong> de aparición. <br>• <code>async</code> → en cuanto esté descargado, <strong>interrumpiendo</strong> el parsing. El orden no está garantizado.</div>
+    </div>
+
+    <button class="btn-done" onclick="markDone(this,0)">✓ Marcar módulo como dominado</button>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- MÓDULO 1: FUNDAMENTOS -->
+  <!-- ============================================================ -->
+  <section class="card module" id="mod-1" data-module="1">
+    <h2><span class="module-num">1</span> Fundamentos: cómo el navegador carga tu página</h2>
+
+    <p>Antes de ver <em>cómo</em> insertar JS, necesitas entender <strong>qué hace el navegador</strong> al abrir un HTML.</p>
+
+    <h3>El pipeline del navegador</h3>
+    <ol>
+      <li><strong>Descarga el HTML</strong> desde el servidor.</li>
+      <li><strong>Parsea</strong> el HTML línea por línea, construyendo el <strong>DOM</strong> (Document Object Model).</li>
+      <li>Cuando encuentra CSS, lo descarga (en paralelo) y construye el <strong>CSSOM</strong>.</li>
+      <li>Cuando encuentra <code>&lt;script&gt;</code>, <strong>pausa el parsing</strong>, descarga y ejecuta el JS, y luego continúa.</li>
+      <li>Combina DOM + CSSOM → pinta la página.</li>
+    </ol>
+
+    <div class="callout info">
+      <strong>🔑 Concepto clave: el DOM</strong>
+      El <strong>DOM</strong> es la representación en memoria de tu HTML como un árbol de objetos. JavaScript no modifica el archivo HTML en disco: modifica el DOM. Por eso puedes cambiar contenido sin recargar.
+    </div>
+
+    <h3>El DOM visualmente</h3>
+    <div class="dom-tree">
+      <div class="dom-node root">document</div>
+      <div class="dom-indent"><div class="dom-node">html</div></div>
+      <div class="dom-indent" style="margin-left:48px"><div class="dom-node">head</div></div>
+      <div class="dom-indent" style="margin-left:72px"><div class="dom-node leaf">title</div></div>
+      <div class="dom-indent" style="margin-left:72px"><div class="dom-node leaf">meta</div></div>
+      <div class="dom-indent" style="margin-left:48px"><div class="dom-node">body</div></div>
+      <div class="dom-indent" style="margin-left:72px"><div class="dom-node leaf">h1</div></div>
+      <div class="dom-indent" style="margin-left:72px"><div class="dom-node leaf">p</div></div>
+      <div class="dom-indent" style="margin-left:72px"><div class="dom-node leaf" style="border-color: var(--external); color: var(--external);">script</div></div>
+    </div>
+
+    <p>Cuando tu JS dice <code>document.getElementById("miId")</code>, está buscando un nodo en ese árbol. Por eso <strong>el elemento debe existir en el DOM</strong> antes de que tu script lo intente usar.</p>
+
+    <h3>¿Qué es JavaScript?</h3>
+    <p>Es el <strong>lenguaje de programación del navegador</strong>. Con él puedes:</p>
+    <ul>
+      <li>Reaccionar a eventos (clics, teclas, scroll).</li>
+      <li>Modificar el DOM (crear, borrar, cambiar elementos).</li>
+      <li>Hacer peticiones de red (<code>fetch</code>, <code>XMLHttpRequest</code>).</li>
+      <li>Guardar datos localmente (<code>localStorage</code>, IndexedDB).</li>
+      <li>Y un largo etcétera.</li>
+    </ul>
+
+    <div class="callout warn">
+      <strong>⚠️ Antes de continuar</strong>
+      Ten presente esta regla mental: <em>"el HTML construye la estructura, el CSS la viste, y JavaScript le da vida"</em>. Los tres viven en el navegador, pero se cargan y ejecutan de forma distinta.
+    </div>
+
+    <div class="predict">
+      <span class="tag">AUTOEXPLICACIÓN</span>
+      <p>Con tus palabras: <strong>¿por qué crees que el navegador pausa el parsing cuando encuentra un <code>&lt;script&gt;</code> sin atributos?</strong> ¿Qué problema intenta evitar?</p>
+      <textarea placeholder="Explica con tus palabras..."></textarea>
+      <button class="btn btn-reveal" onclick="reveal(this)">Ver razonamiento</button>
+      <div class="answer hidden">Porque el script puede contener instrucciones como <code>document.getElementById("miBoton").style.color = "red"</code>. Si el elemento aún no existe en el DOM, esa instrucción fallaría. Pausar garantiza que el script se ejecuta cuando el HTML ya fue parseado hasta ese punto. El coste: si el script tarda en descargarse, la página queda en blanco mientras tanto.</div>
+    </div>
+
+    <button class="btn-done" onclick="markDone(this,1)">✓ Marcar módulo como dominado</button>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- MÓDULO 2: INLINE -->
+  <!-- ============================================================ -->
+  <section class="card module inline-card" id="mod-2" data-module="2">
+    <h2><span class="module-num">2</span> 🟠 Forma 1: JavaScript inline</h2>
+    <p>El código se coloca <strong>dentro de un atributo HTML</strong>, como <code>onclick</code>, <code>onmouseover</code>, <code>onload</code>, etc.</p>
+
+    <h3>Ejemplo: el botón clásico</h3>
+    <pre><code><span class="tag">&lt;button</span> <span class="attr">onclick</span>=<span class="st">"alert('¡Hola!' )"</span><span class="tag">&gt;</span>Púlsame<span class="tag">&lt;/button&gt;</span></code></pre>
+
+    <div class="demo-box">
+      <h4>⚡ Prueba real (es un botón inline de verdad)</h4>
+      <button class="btn btn-demo inline" onclick="alert('¡Hola desde inline JS! 🎉\n\nEste botón tiene el código directamente en el atributo onclick.')">🎯 Púlsame</button>
+      <p style="font-size:0.85rem;color:var(--muted);margin-top:10px;margin-bottom:0">El código que acabas de ejecutar está en el atributo <code>onclick</code> del botón.</p>
+    </div>
+
+    <h3>¿Cuándo usarlo?</h3>
+    <p>Casi nunca en producción. Solo tiene sentido para:</p>
+    <ul>
+      <li>Pruebas muy rápidas de un comportamiento.</li>
+      <li>Ejemplos aislados en documentación o tutoriales.</li>
+    </ul>
+
+    <h3>Ventajas</h3>
+    <ul>
+      <li>✅ Se ve inmediatamente qué pasa al pulsar.</li>
+      <li>✅ Funciona sin archivos adicionales.</li>
+      <li>✅ Cero configuración.</li>
+    </ul>
+
+    <h3>Desventajas (son muchas)</h3>
+    <ul>
+      <li>❌ <strong>Mezcla HTML con lógica</strong> → difícil de mantener.</li>
+      <li>❌ <strong>No se reutiliza</strong>: cada botón necesita su propio código.</li>
+      <li>❌ <strong>No se cachea</strong>: se descarga de nuevo cada vez.</li>
+      <li>❌ <strong>Bloqueado por CSP</strong> (Content Security Policy) en muchas webs modernas.</li>
+      <li>❌ <strong>No admite <code>import</code>/<code>export</code></strong> ni módulos ES.</li>
+      <li>❌ <strong>Errores de sintaxis</strong> son más difíciles de detectar.</li>
+      <li>❌ <strong>Difícil de testear</strong> automáticamente.</li>
+    </ul>
+
+    <div class="callout danger">
+      <strong>🚨 Mala práctica</strong>
+      <pre style="margin:6px 0 0"><code><span class="tag">&lt;button</span> <span class="attr">onclick</span>=<span class="st">"if (confirm('¿Seguro?')) { document.getElementById('caja').style.display = 'none'; localStorage.setItem('oculto', '1'); }"</span><span class="tag">&gt;</span>Ocultar<span class="tag">&lt;/button&gt;</span></code></pre>
+      Este tipo de "inline gigante" es un infierno de mantener. En cambio:
+      <pre style="margin:6px 0 0"><code><span class="tag">&lt;button</span> <span class="attr">id</span>=<span class="st">"ocultarBtn"</span><span class="tag">&gt;</span>Ocultar<span class="tag">&lt;/button&gt;</span>
+<span class="tag">&lt;script&gt;</span>
+  document.getElementById(<span class="st">'ocultarBtn'</span>).addEventListener(<span class="st">'click'</span>, () => {
+    <span class="kw">if</span> (confirm(<span class="st">'¿Seguro?'</span>)) {
+      document.getElementById(<span class="st">'caja'</span>).style.display = <span class="st">'none'</span>;
+      localStorage.setItem(<span class="st">'oculto'</span>, <span class="st">'1'</span>);
+    }
+  });
+<span class="tag">&lt;/script&gt;</span></code></pre>
+    </div>
+
+    <div class="predict">
+      <span class="tag">REFLEXIÓN</span>
+      <p>¿Por qué crees que los frameworks modernos (React, Vue) están en contra del inline?</p>
+      <textarea placeholder="Escribe tu razonamiento..."></textarea>
+      <button class="btn btn-reveal" onclick="reveal(this)">Ver respuesta</button>
+      <div class="answer hidden">Porque rompen la separación de responsabilidades (HTML estructural vs lógica) y hacen imposible razonar sobre el flujo de la aplicación. Además, el inline no se puede testear, no se puede compilar, no se cachea y la CSP lo bloquea. Los frameworks prefieren <strong>event delegation</strong> y manejadores declarativos.</div>
+    </div>
+
+    <button class="btn-done" onclick="markDone(this,2)">✓ Marcar módulo como dominado</button>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- MÓDULO 3: INTERNAL -->
+  <!-- ============================================================ -->
+  <section class="card module internal-card" id="mod-3" data-module="3">
+    <h2><span class="module-num">3</span> 🟢 Forma 2: JavaScript interno</h2>
+    <p>El código se coloca dentro de una etiqueta <code>&lt;script&gt;</code> en el propio archivo HTML. Puede ir en el <code>&lt;head&gt;</code> o en el <code>&lt;body&gt;</code>.</p>
+
+    <h3>Ejemplo: un contador simple</h3>
+    <pre><code><span class="tag">&lt;div</span> <span class="attr">id</span>=<span class="st">"contador"</span><span class="tag">&gt;</span>Contador: 0<span class="tag">&lt;/div&gt;</span>
+<span class="tag">&lt;button</span> <span class="attr">id</span>=<span class="st">"sumarBtn"</span><span class="tag">&gt;</span>+1<span class="tag">&lt;/button&gt;</span>
+
+<span class="tag">&lt;script&gt;</span>
+  <span class="kw">let</span> cuenta = <span class="num">0</span>;
+  document.getElementById(<span class="st">'sumarBtn'</span>).addEventListener(<span class="st">'click'</span>, () => {
+    cuenta++;
+    document.getElementById(<span class="st">'contador'</span>).textContent = <span class="st">`Contador: ${cuenta}`</span>;
+  });
+<span class="tag">&lt;/script&gt;</span></code></pre>
+
+    <div class="demo-box">
+      <h4>⚡ Prueba real (script interno)</h4>
+      <div id="contadorDemo" class="demo-output">Contador: 0</div>
+      <button class="btn btn-demo internal" id="sumarDemoBtn">➕ Incrementar</button>
+      <button class="btn btn-demo internal" id="resetDemoBtn" style="background:linear-gradient(135deg,#64748b,#475569)">↺ Reset</button>
+    </div>
+    <script>
+      (function() {
+        let cuenta = 0;
+        const out = document.getElementById('contadorDemo');
+        document.getElementById('sumarDemoBtn').addEventListener('click', () => {
+          cuenta++;
+          out.textContent = 'Contador: ' + cuenta;
+          out.classList.add('active');
+        });
+        document.getElementById('resetDemoBtn').addEventListener('click', () => {
+          cuenta = 0;
+          out.textContent = 'Contador: 0';
+          out.classList.remove('active');
+        });
+      })();
+    </script>
+
+    <h3>¿Dónde colocarlo? Head vs Body</h3>
+
+    <table class="table-internal">
+      <tr><th>Ubicación</th><th>Comportamiento</th><th>Recomendación</th></tr>
+      <tr>
+        <td><code>&lt;head&gt;</code></td>
+        <td>Se ejecuta ANTES de que el <code>&lt;body&gt;</code> exista. <code>document.getElementById()</code> devuelve <code>null</code> si busca algo del body.</td>
+        <td>❌ Evitar (salvo con <code>defer</code> o <code>DOMContentLoaded</code>)</td>
+      </tr>
+      <tr>
+        <td>Final del <code>&lt;body&gt;</code></td>
+        <td>Se ejecuta DESPUÉS de que todo el HTML esté parseado. Todos los elementos existen.</td>
+        <td>✅ Recomendado</td>
+      </tr>
+    </table>
+
+    <div class="callout warn">
+      <strong>⚠️ Error clásico</strong>
+      <pre style="margin:6px 0 0"><code><span class="tag">&lt;head&gt;</span>
+  <span class="tag">&lt;script&gt;</span>
+    document.getElementById(<span class="st">'miBoton'</span>).addEventListener(...);
+    <span class="cm">// ❌ TypeError: Cannot read properties of null</span>
+    <span class="cm">// (el body aún no existe cuando esto se ejecuta)</span>
+  <span class="tag">&lt;/script&gt;</span>
+<span class="tag">&lt;/head&gt;</span>
+<span class="tag">&lt;body&gt;</span>
+  <span class="tag">&lt;button</span> <span class="attr">id</span>=<span class="st">"miBoton"</span><span class="tag">&gt;</span>...<span class="tag">&lt;/button&gt;</span>
+<span class="tag">&lt;/body&gt;</span></code></pre>
+    </div>
+
+    <h3>Ventajas</h3>
+    <ul>
+      <li>✅ Todo en un archivo: fácil de compartir y transportar.</li>
+      <li>✅ Bueno para páginas pequeñas o prototipos.</li>
+      <li>✅ No hay peticiones adicionales.</li>
+      <li>✅ Fácil de leer si el código es corto.</li>
+    </ul>
+
+    <h3>Desventajas</h3>
+    <ul>
+      <li>❌ <strong>No se reutiliza</strong> entre páginas: si tienes 20 HTMLs, copias 20 veces el script.</li>
+      <li>❌ <strong>No se cachea</strong>: cada página lo descarga de nuevo.</li>
+      <li>❌ <strong>Mezcla contenido y comportamiento</strong> en el mismo archivo.</li>
+      <li>❌ <strong>Archivos HTML gigantes</strong> si el JS crece.</li>
+      <li>❌ Dificulta el trabajo en equipo.</li>
+    </ul>
+
+    <div class="predict">
+      <span class="tag">PREDICCIÓN</span>
+      <p>¿Qué pasa si pones un <code>&lt;script&gt;</code> en el <code>&lt;head&gt;</code> que intenta acceder a un elemento del <code>&lt;body&gt;</code> con <code>document.getElementById()</code>?</p>
+      <textarea placeholder="Escribe tu predicción..."></textarea>
+      <button class="btn btn-reveal" onclick="reveal(this)">Ver respuesta</button>
+      <div class="answer hidden">Devuelve <code>null</code> porque el elemento aún no existe en el DOM. Si luego haces <code>.addEventListener()</code> o <code>.style</code>, obtienes un <code>TypeError: Cannot read properties of null</code>. Soluciones: mover el script al final del body, usar <code>defer</code>, o envolverlo en <code>document.addEventListener('DOMContentLoaded', ...)</code>.</div>
+    </div>
+
+    <button class="btn-done" onclick="markDone(this,3)">✓ Marcar módulo como dominado</button>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- MÓDULO 4: EXTERNAL -->
+  <!-- ============================================================ -->
+  <section class="card module external-card" id="mod-4" data-module="4">
+    <h2><span class="module-num">4</span> 🔵 Forma 3: JavaScript externo</h2>
+    <p>El código vive en un archivo <code>.js</code> separado y se enlaza desde el HTML con el atributo <code>src</code>.</p>
+
+    <h3>Estructura típica</h3>
+    <pre><code>📁 mi-proyecto/
+├── index.html
+├── styles.css
+└── app.js     <span class="cm">← el script externo</span></code></pre>
+
+    <pre><code><span class="cm">&lt;!-- index.html --&gt;</span>
+<span class="tag">&lt;body&gt;</span>
+  <span class="tag">&lt;h1&gt;</span>Mi web<span class="tag">&lt;/h1&gt;</span>
+  <span class="tag">&lt;button</span> <span class="attr">id</span>=<span class="st">"saludar"</span><span class="tag">&gt;</span>Saludar<span class="tag">&lt;/button&gt;</span>
+
+  <span class="tag">&lt;script</span> <span class="attr">src</span>=<span class="st">"app.js"</span><span class="tag">&gt;&lt;/script&gt;</span>
+<span class="tag">&lt;/body&gt;</span>
+
+<span class="cm">// app.js</span>
+document.getElementById(<span class="st">'saludar'</span>).addEventListener(<span class="st">'click'</span>, () =&gt; {
+  alert(<span class="st">'¡Hola desde un archivo externo!'</span>);
+});</code></pre>
+
+    <div class="callout danger">
+      <strong>🚨 Error muy común</strong>
+      <pre style="margin:6px 0 0"><code><span class="cm">&lt;!-- ❌ MAL: el contenido se IGNORA --&gt;</span>
+<span class="tag">&lt;script</span> <span class="attr">src</span>=<span class="st">"app.js"</span><span class="tag">&gt;</span>
+  alert(<span class="st">"Esto nunca se ejecutará"</span>);
+<span class="tag">&lt;/script&gt;</span></code></pre>
+      Si usas <code>src</code>, la etiqueta debe ir <strong>vacía</strong>. Solo se ejecuta el archivo externo; el contenido interior se descarta.
+    </div>
+
+    <h3>Ejemplo: simulando un archivo externo</h3>
+    <p>Como esta página es un único archivo HTML, abajo simulamos un archivo externo con un <code>Blob</code> (una URL en memoria). El mecanismo es idéntico al de un archivo <code>.js</code> real:</p>
+
+    <div class="demo-box">
+      <h4>⚡ Prueba real (script externo simulado)</h4>
+      <div id="externalOutput" class="demo-output">Esperando a que cargues el script…</div>
+      <button class="btn btn-demo external" id="loadExternalBtn">📦 Cargar app.js externo</button>
+    </div>
+
+    <h3>Los tres atributos clave: <code>src</code>, <code>defer</code>, <code>async</code></h3>
+
+    <table class="table-external">
+      <tr><th>Atributo</th><th>Descarga</th><th>Ejecución</th><th>Orden</th></tr>
+      <tr>
+        <td><em>ninguno</em></td>
+        <td>Bloquea el parsing</td>
+        <td>Al terminar de descargar</td>
+        <td>Sí, en orden de aparición</td>
+      </tr>
+      <tr>
+        <td><code>defer</code></td>
+        <td>En paralelo</td>
+        <td>Después de parsear el HTML</td>
+        <td>Sí, en orden</td>
+      </tr>
+      <tr>
+        <td><code>async</code></td>
+        <td>En paralelo</td>
+        <td>En cuanto esté listo</td>
+        <td>No garantizado</td>
+      </tr>
+    </table>
+
+    <p><strong>Regla práctica:</strong> usa <code>defer</code> casi siempre. Reserva <code>async</code> para scripts independientes (analytics, publicidad, widgets) donde el orden no importa.</p>
+
+    <h3>Ventajas</h3>
+    <ul>
+      <li>✅ <strong>Reutilizable</strong>: un archivo para todas las páginas.</li>
+      <li>✅ <strong>Cacheable</strong>: el navegador lo descarga una vez y lo reutiliza.</li>
+      <li>✅ <strong>Separación de responsabilidades</strong>: HTML, CSS y JS en archivos separados.</li>
+      <li>✅ <strong>Fácil de testear</strong> y de trabajar en equipo.</li>
+      <li>✅ Admite <code>import</code>/<code>export</code> y <code>type="module"</code>.</li>
+      <li>✅ El editor te da mejor autocompletado y linting.</li>
+    </ul>
+
+    <h3>Desventajas</h3>
+    <ul>
+      <li>❌ Requiere un servidor (no funciona abriendo el HTML con <code>file://</code> en algunos casos).</li>
+      <li>❌ Una petición HTTP extra la primera vez (amortiguada por caché).</li>
+      <li>❌ Puede fallar por rutas incorrectas (404).</li>
+      <li>❌ CORS si el archivo está en otro dominio.</li>
+    </ul>
+
+    <div class="callout success">
+      <strong>💡 Buena práctica moderna</strong>
+      <pre style="margin:6px 0 0"><code><span class="tag">&lt;script</span> <span class="attr">src</span>=<span class="st">"app.js"</span> <span class="attr">defer</span><span class="tag">&gt;&lt;/script&gt;</span></code></pre>
+      Lo pones en el <code>&lt;head&gt;</code> con <code>defer</code>: se descarga en paralelo, se ejecuta en orden al terminar el HTML, y el usuario no espera.
+    </div>
+
+    <button class="btn-done" onclick="markDone(this,4)">✓ Marcar módulo como dominado</button>
+  </section>
+
+  <script>
+    // Demo de "script externo": creamos un Blob con código JS,
+    // creamos un <script src="blob:..."> y lo inyectamos.
+    document.getElementById('loadExternalBtn').addEventListener('click', function() {
+      const out = document.getElementById('externalOutput');
+      out.textContent = '⏳ Cargando app.js…';
+      out.classList.remove('active');
+
+      const codigoExterno = `
+        document.getElementById('externalOutput').textContent = '✅ app.js se ha cargado y ejecutado correctamente.';
+        document.getElementById('externalOutput').classList.add('active');
+        document.getElementById('loadExternalBtn').textContent = '✅ app.js ya cargado';
+      `;
+      const blob = new Blob([codigoExterno], { type: 'text/javascript' });
+      const url = URL.createObjectURL(blob);
+      const s = document.createElement('script');
+      s.src = url;
+      s.onload = () => URL.revokeObjectURL(url);
+      document.body.appendChild(s);
+    });
+  </script>
+
+  <!-- ============================================================ -->
+  <!-- MÓDULO 5: COMPARACIÓN -->
+  <!-- ============================================================ -->
+  <section class="card module" id="mod-5" data-module="5">
+    <h2><span class="module-num">5</span> 🧩 Las tres formas cara a cara</h2>
+
+    <h3>Comparación visual</h3>
+    <div class="method-grid">
+      <div class="method-card inline">
+        <span class="emoji">🟠</span>
+        <h3 style="color:var(--inline);">Inline</h3>
+        <p style="font-size:0.88rem;margin-bottom:8px;"><code>onclick="..."</code></p>
+        <ul>
+          <li>⚡ Rápido de escribir</li>
+          <li>❌ Mezcla HTML + JS</li>
+          <li>❌ No reutilizable</li>
+          <li>❌ No cacheable</li>
+          <li>❌ Bloqueado por CSP</li>
+        </ul>
+      </div>
+      <div class="method-card internal">
+        <span class="emoji">🟢</span>
+        <h3 style="color:var(--internal);">Internal</h3>
+        <p style="font-size:0.88rem;margin-bottom:8px;"><code>&lt;script&gt;...&lt;/script&gt;</code></p>
+        <ul>
+          <li>✅ Todo en un archivo</li>
+          <li>✅ Sin peticiones extra</li>
+          <li>❌ No reutilizable</li>
+          <li>❌ HTML gigante si crece</li>
+          <li>❌ Sin módulos</li>
+        </ul>
+      </div>
+      <div class="method-card external">
+        <span class="emoji">🔵</span>
+        <h3 style="color:var(--external);">External</h3>
+        <p style="font-size:0.88rem;margin-bottom:8px;"><code>&lt;script src="..."&gt;</code></p>
+        <ul>
+          <li>✅ Reutilizable</li>
+          <li>✅ Cacheable</li>
+          <li>✅ Separación limpia</li>
+          <li>✅ Módulos ES</li>
+          <li>✅ Testeable</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>Tabla comparativa completa</h3>
+    <table>
+      <tr>
+        <th>Criterio</th>
+        <th style="background:var(--inline);">Inline</th>
+        <th style="background:var(--internal);">Internal</th>
+        <th style="background:var(--external);">External</th>
+      </tr>
+      <tr><td>Se reutiliza entre páginas</td><td>❌</td><td>❌</td><td>✅</td></tr>
+      <tr><td>Cacheable por el navegador</td><td>❌</td><td>❌</td><td>✅</td></tr>
+      <tr><td>Separa HTML/CSS/JS</td><td>❌</td><td>🟡</td><td>✅</td></tr>
+      <tr><td>Permite módulos ES</td><td>❌</td><td>✅</td><td>✅</td></tr>
+      <tr><td>Compatible con CSP estricta</td><td>❌</td><td>🟡 (con nonce)</td><td>✅</td></tr>
+      <tr><td>Fácil de testear</td><td>❌</td><td>🟡</td><td>✅</td></tr>
+      <tr><td>Funciona abriendo con <code>file://</code></td><td>✅</td><td>✅</td><td>🟡 (a veces falla)</td></tr>
+      <tr><td>Ideal para aprender/prototipar</td><td>✅</td><td>✅</td><td>🟡</td></tr>
+      <tr><td>Ideal para producción</td><td>❌</td><td>❌</td><td>✅</td></tr>
+    </table>
+
+    <h3>¿Y cuál elijo? Selector interactivo</h3>
+    <div class="scenario-matcher">
+      <p style="margin-bottom:10px;font-weight:600;">Describe tu situación:</p>
+      <select id="scenarioSelect">
+        <option value="">— Elige una opción —</option>
+        <option value="prototype">Solo quiero probar algo rápido en 30 segundos</option>
+        <option value="single-page">Tengo una sola página y el código es pequeño (&lt; 50 líneas)</option>
+        <option value="multi-page">Tengo varias páginas que comparten el mismo código</option>
+        <option value="team">Trabajo en equipo / es un proyecto real</option>
+        <option value="csp">Tengo una Content Security Policy estricta activada</option>
+        <option value="modules">Quiero usar <code>import</code>/<code>export</code></option>
+      </select>
+      <div id="recommendation" class="recommendation hidden"></div>
+    </div>
+
+    <h3>Las tres formas en acción, lado a lado</h3>
+    <p>Mismo botón, mismo resultado, tres implementaciones distintas:</p>
+    <div class="method-grid">
+      <div class="method-card inline">
+        <h4 style="margin-top:0">🟠 Inline</h4>
+        <pre style="font-size:0.75rem;padding:8px;margin:6px 0"><code>&lt;button onclick="alert('Hola')"&gt;...&lt;/button&gt;</code></pre>
+        <button class="btn btn-demo inline" onclick="alert('¡Hola desde INLINE!')">Ejecutar</button>
+      </div>
+      <div class="method-card internal">
+        <h4 style="margin-top:0">🟢 Internal</h4>
+        <pre style="font-size:0.75rem;padding:8px;margin:6px 0"><code>&lt;button id="b"&gt;...&lt;/button&gt;
+&lt;script&gt;
+  document.getElementById('b')
+    .onclick = () =&gt; alert('Hola');
+&lt;/script&gt;</code></pre>
+        <button class="btn btn-demo internal" id="compareInternal">Ejecutar</button>
+      </div>
+      <div class="method-card external">
+        <h4 style="margin-top:0">🔵 External</h4>
+        <pre style="font-size:0.75rem;padding:8px;margin:6px 0"><code>&lt;button id="c"&gt;...&lt;/button&gt;
+&lt;script src="app.js"&gt;&lt;/script&gt;</code></pre>
+        <button class="btn btn-demo external" id="compareExternal">Ejecutar</button>
+      </div>
+    </div>
+
+    <button class="btn-done" onclick="markDone(this,5)">✓ Marcar módulo como dominado</button>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- MÓDULO 6: TIMELINE head/body/defer/async -->
+  <!-- ============================================================ -->
+  <section class="card module" id="mod-6" data-module="6">
+    <h2><span class="module-num">6</span> ⏱️ Timeline: cómo afecta dónde colocas el script</h2>
+    <p>Este simulador te muestra <strong>visualmente</strong> lo que ocurre en el navegador con las cuatro estrategias más comunes. Elige una y compara.</p>
+
+    <div class="timeline-container">
+      <div class="timeline-tabs">
+        <button class="timeline-tab active" data-scenario="head-blocking">📌 Script en &lt;head&gt;</button>
+        <button class="timeline-tab" data-scenario="body-end">📌 Script al final del &lt;body&gt;</button>
+        <button class="timeline-tab" data-scenario="head-defer">⚡ defer</button>
+        <button class="timeline-tab" data-scenario="head-async">🔥 async</button>
+      </div>
+      <div class="gantt" id="gantt"></div>
+      <div class="gantt-desc" id="ganttDesc"></div>
+      <div class="gantt-legend">
+        <span><div class="legend-dot" style="background:linear-gradient(135deg,#0d9488,#14b8a6);"></div> HTML parseando</span>
+        <span><div class="legend-dot" style="background:#94a3b8;"></div> HTML bloqueado</span>
+        <span><div class="legend-dot" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);"></div> Descarga JS</span>
+        <span><div class="legend-dot" style="background:linear-gradient(135deg,#f59e0b,#ef4444);"></div> Ejecución JS</span>
+      </div>
+    </div>
+
+    <h3>Conclusión</h3>
+    <ul>
+      <li>Si pones el script en <code>&lt;head&gt;</code> sin atributos → el navegador <strong>se congela</strong> mientras descarga y ejecuta.</li>
+      <li>Si lo pones al final del <code>&lt;body&gt;</code> → el usuario ve la página antes de que el JS se ejecute.</li>
+      <li><code>defer</code> → descarga en paralelo, ejecuta al final del parsing, <strong>respeta orden</strong>.</li>
+      <li><code>async</code> → descarga en paralelo, ejecuta cuando está listo, <strong>puede interrumpir el HTML</strong> y no respeta orden.</li>
+    </ul>
+
+    <div class="callout success">
+      <strong>🏆 Regla de oro</strong>
+      <pre style="margin:6px 0 0"><code><span class="tag">&lt;head&gt;</span>
+  <span class="tag">&lt;script</span> <span class="attr">src</span>=<span class="st">"app.js"</span> <span class="attr">defer</span><span class="tag">&gt;&lt;/script&gt;</span>
+<span class="tag">&lt;/head&gt;</span></code></pre>
+      Descarga en paralelo y ejecuta cuando el DOM está listo. Es la opción más segura para la mayoría de los casos.
+    </div>
+
+    <button class="btn-done" onclick="markDone(this,6)">✓ Marcar módulo como dominado</button>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- MÓDULO 7: SANDBOX -->
+  <!-- ============================================================ -->
+  <section class="card module" id="mod-7" data-module="7">
+    <h2><span class="module-num">7</span> 🧪 Sandbox: experimenta en vivo</h2>
+    <p>Edita el HTML de la izquierda y pulsa <strong>Ejecutar</strong> para ver el resultado en la derecha. Puedes probar las tres formas de insertar JS y ver qué pasa.</p>
+
+    <div class="sandbox-wrap">
+      <div class="sandbox-editor">
+        <div class="sandbox-toolbar">
+          <span>editor.html</span>
+          <button onclick="runSandbox()">▶ Ejecutar</button>
+        </div>
+        <textarea id="sandboxCode" spellcheck="false">
+<!DOCTYPE html>
+<html>
+<body>
+  <h1>Mi experimento</h1>
+  <p>Prueba las tres formas:</p>
+
+  <!-- 1. Inline -->
+  <button onclick="alert('Inline funciona')">
+    Inline
+  </button>
+
+  <div id="salida">Esperando...</div>
+  <button id="btnInterno">Interno</button>
+
+  <!-- 2. Internal -->
+  <script>
+    document.getElementById('btnInterno').onclick = () => {
+      document.getElementById('salida').textContent =
+        '¡Script interno funcionando!';
+    };
+  <\/script>
+
+  <!-- 3. External (simulado con Blob) -->
+  <button id="btnExterno">Externo</button>
+  <script>
+    document.getElementById('btnExterno').onclick = () => {
+      const blob = new Blob(
+        ['document.getElementById("salida").textContent = "¡Script externo (simulado) funcionando!";'],
+        { type: 'text/javascript' }
+      );
+      const s = document.createElement('script');
+      s.src = URL.createObjectURL(blob);
+      document.body.appendChild(s);
+    };
+  <\/script>
+</body>
+</html></textarea>
+      </div>
+      <div class="sandbox-preview">
+        <div class="sandbox-toolbar"><span>vista previa</span></div>
+        <iframe id="sandboxIframe" sandbox="allow-scripts allow-modals"></iframe>
+      </div>
+    </div>
+
+    <div class="callout info">
+      <strong>🔒 Nota sobre el sandbox</strong>
+      La vista previa se ejecuta en un iframe aislado (<code>sandbox="allow-scripts allow-modals"</code>). Los <code>alert()</code> y <code>confirm()</code> aparecerán en el contexto del iframe; los verás igual. El iframe no puede acceder a tu página ni a tus datos.
+    </div>
+
+    <div class="predict">
+      <span class="tag">EXPERIMENTO SUGERIDO</span>
+      <p>Intenta esto en el sandbox:</p>
+      <ol style="margin:6px 0">
+        <li>Elimina el <code>&lt;script&gt;</code> interno. ¿Qué pasa al pulsar el botón "Interno"?</li>
+        <li>Mueve el <code>&lt;script&gt;</code> interno al <code>&lt;head&gt;</code>. ¿Qué error aparece? (Abre la consola del iframe con F12 → Console.)</li>
+        <li>Añade una etiqueta <code>&lt;noscript&gt;Tu navegador no soporta JS&lt;/noscript&gt;</code>.</li>
+      </ol>
+      <textarea placeholder="Anota tus observaciones..."></textarea>
+    </div>
+
+    <button class="btn-done" onclick="markDone(this,7)">✓ Marcar módulo como dominado</button>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- MÓDULO 8: ERRORES -->
+  <!-- ============================================================ -->
+  <section class="card module" id="mod-8" data-module="8">
+    <h2><span class="module-num">8</span> 🔍 Análisis de errores típicos</h2>
+    <p>Detectar errores en código ajeno es una de las técnicas más potentes para construir un modelo mental robusto. Lee cada caso e identifica el bug <em>antes</em> de revelar la respuesta.</p>
+
+    <div class="predict">
+      <span class="tag">BUG 1</span>
+      <pre><code><span class="tag">&lt;script</span> <span class="attr">src</span>=<span class="st">"app.js"</span><span class="tag">&gt;</span>
+  console.log(<span class="st">"Nunca aparecerá en la consola"</span>);
+<span class="tag">&lt;/script&gt;</span></code></pre>
+      <p>¿Qué está mal y por qué?</p>
+      <textarea placeholder="Explica el bug..."></textarea>
+      <button class="btn btn-reveal" onclick="reveal(this)">Ver solución</button>
+      <div class="answer hidden"><strong>Bug:</strong> cuando un <code>&lt;script&gt;</code> tiene <code>src</code>, el contenido entre las etiquetas se <strong>ignora</strong>. Solo se carga y ejecuta el archivo externo. Si quieres ejecutar código inline, usa una etiqueta sin <code>src</code>.</div>
+    </div>
+
+    <div class="predict">
+      <span class="tag">BUG 2</span>
+      <pre><code><span class="tag">&lt;head&gt;</span>
+  <span class="tag">&lt;script&gt;</span>
+    document.getElementById(<span class="st">"titulo"</span>).textContent = <span class="st">"Hola"</span>;
+  <span class="tag">&lt;/script&gt;</span>
+<span class="tag">&lt;/head&gt;</span>
+<span class="tag">&lt;body&gt;</span>
+  <span class="tag">&lt;h1</span> <span class="attr">id</span>=<span class="st">"titulo"</span><span class="tag">&gt;</span>Original<span class="tag">&lt;/h1&gt;</span>
+<span class="tag">&lt;/body&gt;</span></code></pre>
+      <p>¿Por qué falla y cómo se arregla?</p>
+      <textarea placeholder="Explica el bug..."></textarea>
+      <button class="btn btn-reveal" onclick="reveal(this)">Ver solución</button>
+      <div class="answer hidden"><strong>Bug:</strong> <code>document.getElementById("titulo")</code> devuelve <code>null</code> porque el <code>&lt;h1&gt;</code> aún no existe en el DOM cuando el script se ejecuta (está en el <code>&lt;head&gt;</code>). Al intentar <code>.textContent</code> sobre <code>null</code>, lanza <code>TypeError</code>.<br><strong>Fix A:</strong> mover el script al final del <code>&lt;body&gt;</code>.<br><strong>Fix B:</strong> añadir <code>defer</code> si es externo.<br><strong>Fix C:</strong> envolver en <code>document.addEventListener('DOMContentLoaded', ...)</code>.</div>
+    </div>
+
+    <div class="predict">
+      <span class="tag">BUG 3</span>
+      <pre><code><span class="tag">&lt;script</span> <span class="attr">src</span>=<span class="st">"utils.js"</span> <span class="attr">async</span><span class="tag">&gt;&lt;/script&gt;</span>
+<span class="tag">&lt;script</span> <span class="attr">src</span>=<span class="st">"app.js"</span> <span class="attr">async</span><span class="tag">&gt;&lt;/script&gt;</span>
+
+<span class="cm">// app.js usa funciones definidas en utils.js</span></code></pre>
+      <p>Este código puede fallar de forma intermitente. ¿Por qué?</p>
+      <textarea placeholder="Explica el bug..."></textarea>
+      <button class="btn btn-reveal" onclick="reveal(this)">Ver solución</button>
+      <div class="answer hidden"><strong>Bug:</strong> con <code>async</code>, el orden de ejecución <strong>no está garantizado</strong>. Si <code>app.js</code> se descarga antes que <code>utils.js</code>, se ejecutará primero y fallará al intentar usar funciones que aún no existen. Es un bug <em>intermitente</em> (race condition).<br><strong>Fix:</strong> usar <code>defer</code> en ambos, o consolidar en un solo archivo, o usar <code>type="module"</code> (que siempre respeta el orden).</div>
+    </div>
+
+    <div class="predict">
+      <span class="tag">BUG 4</span>
+      <pre><code><span class="tag">&lt;button</span> <span class="attr">onclick</span>=<span class="st">"saludar()"</span><span class="tag">&gt;</span>Hola<span class="tag">&lt;/button&gt;</span>
+<span class="tag">&lt;script</span> <span class="attr">src</span>=<span class="st">"saludo.js"</span> <span class="attr">defer</span><span class="tag">&gt;&lt;/script&gt;</span></code></pre>
+      <p>El botón no hace nada al pulsarlo. ¿Qué puede estar pasando?</p>
+      <textarea placeholder="Explica el bug..."></textarea>
+      <button class="btn btn-reveal" onclick="reveal(this)">Ver solución</button>
+      <div class="answer hidden">Posibles causas: <br>1) <code>saludo.js</code> no define la función <code>saludar</code> en el scope global. <br>2) La ruta del archivo está mal (404 en la pestaña Network). <br>3) <code>saludo.js</code> define <code>saludar</code> dentro de un módulo o <code>IIFE</code>, por lo que no es global. <br>4) Hay un error previo en otro script que detuvo la ejecución. <br><br>Solución profesional: en lugar de <code>onclick</code>, usar <code>addEventListener</code> desde el propio JS. Así puedes tener la función en cualquier scope.</div>
+    </div>
+
+    <button class="btn-done" onclick="markDone(this,8)">✓ Marcar módulo como dominado</button>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- MÓDULO 9: QUIZ -->
+  <!-- ============================================================ -->
+  <section class="card module" id="mod-9" data-module="9">
+    <h2><span class="module-num">9</span> 🎯 Quiz de transferencia</h2>
+    <p>Responde <strong>sin mirar atrás</strong>. Cada respuesta te da feedback inmediato.</p>
+    <div id="quizContainer"></div>
+    <div id="quizScore" style="margin-top:1rem;font-weight:700;font-size:1.05rem;"></div>
+    <button class="btn-done" onclick="markDone(this,9)">✓ Marcar módulo como dominado</button>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- MÓDULO 10: FEYNMAN -->
+  <!-- ============================================================ -->
+  <section class="card module" id="mod-10" data-module="10">
+    <h2><span class="module-num">10</span> 👨‍🏫 Técnica Feynman + repaso espaciado</h2>
+
+    <h3>Paso 1 — Explícalo como si tuvieras 12 años</h3>
+    <p>Escribe con tus propias palabras las tres formas de insertar JS en HTML, sus ventajas y cuándo usar cada una. Sin copiar. Si te trabas, ¡esa es la parte que necesitas repasar!</p>
+    <textarea class="feynman-area" id="feynmanText" placeholder="Inline sirve para... Internal sirve para... External sirve para... La forma recomendada es... porque... Un error típico es... defer sirve para... async sirve para..."></textarea>
+    <div class="word-count" id="wordCount">0 palabras</div>
+
+    <div class="callout info">
+      <strong>🧩 Autoexplicación final</strong>
+      Cierra los ojos y responde: <em>Si tuviera que darle a alguien una sola regla sobre cómo insertar JS en HTML, ¿cuál sería?</em> (Pista: "usa externo con defer").
+    </div>
+
+    <h3>Paso 2 — Plan de repaso espaciado</h3>
+    <p>La curva del olvido actúa rápido. Marca en tu calendario estos repasos breves (5 minutos basta):</p>
+    <ul>
+      <li><strong>Hoy:</strong> rehaz los demos de los módulos 2, 3 y 4 sin mirar.</li>
+      <li><strong>Mañana:</strong> vuelve al simulador de timeline y predice cada escenario antes de pulsar.</li>
+      <li><strong>En 3 días:</strong> repite el quiz del módulo 9.</li>
+      <li><strong>En 1 semana:</strong> escribe de memoria la diferencia entre <code>defer</code> y <code>async</code>.</li>
+      <li><strong>En 2 semanas:</strong> crea un mini proyecto real con archivo <code>.js</code> externo.</li>
+    </ul>
+
+    <div class="callout success">
+      <strong>🚀 Próximo paso natural</strong>
+      Aprende a usar <code>type="module"</code> con <code>import</code>/<code>export</code>, y a organizar tu JS en varios archivos. Después, pasa a manipulación avanzada del DOM con <code>querySelector</code> y <code>addEventListener</code>.
+    </div>
+
+    <button class="btn-done" onclick="markDone(this,10)">✓ Marcar módulo como dominado</button>
+  </section>
+
+</main>
+
+<footer>
+  Hecho con ⚡ metacognición · Predicción · Simuladores en vivo · Feynman · Repaso espaciado
+</footer>
+
+<script>
+/* ============================================================
+   HIGHLIGHT JS EN BLOQUES
+   ============================================================ */
+function highlightJS(code) {
+  const tokens = [];
+  code = code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  code = code.replace(/(`[^`]*`|"[^"]*"|'[^']*')/g, (m) => {
+    tokens.push('<span class="st">' + m + '</span>');
+    return '§' + (tokens.length - 1) + '§';
+  });
+  code = code.replace(/(\/\/[^\n]*)/g, (m) => {
+    tokens.push('<span class="cm">' + m + '</span>');
+    return '§' + (tokens.length - 1) + '§';
+  });
+  code = code.replace(/&lt;\/?([a-zA-Z][\w-]*)/g, (m, tag) => {
+    return '&lt;' + (m.startsWith('&lt;/') ? '/' : '') + '<span class="tag">' + tag + '</span>';
+  });
+  code = code.replace(/\b(onclick|onload|onmouseover|src|defer|async|type|id|class)\s*=/g, '<span class="attr">$1</span>=');
+  code = code.replace(/\b(let|const|var|if|else|function|return|new|typeof|true|false|null|undefined|NaN|document|alert|confirm|prompt|console|window|localStorage)\b/g, '<span class="kw">$1</span>');
+  code = code.replace(/§(\d+)§/g, (m, i) => tokens[+i]);
+  return code;
+}
+
+document.querySelectorAll('pre code').forEach(el => {
+  if (el.dataset.highlighted) return;
+  const raw = el.textContent;
+  el.innerHTML = highlightJS(raw);
+  el.dataset.highlighted = '1';
+});
+
+/* ============================================================
+   REVEAL ANSWERS
+   ============================================================ */
+function reveal(btn) {
+  const parent = btn.closest('.predict');
+  const answer = parent.querySelector('.answer');
+  answer.classList.toggle('hidden');
+  btn.textContent = answer.classList.contains('hidden') ? 'Ver respuesta' : 'Ocultar respuesta';
+}
+
+/* ============================================================
+   CONFIDENCE BUTTONS
+   ============================================================ */
+document.querySelectorAll('.confidence').forEach(group => {
+  group.querySelectorAll('.conf-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      group.querySelectorAll('.conf-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+});
+
+/* ============================================================
+   PROGRESS
+   ============================================================ */
+const TOTAL = 11;
+function getProgress() {
+  try { return JSON.parse(localStorage.getItem('progreso_js_html') || '[]'); }
+  catch { return []; }
+}
+function saveProgress(arr) {
+  try { localStorage.setItem('progreso_js_html', JSON.stringify(arr)); } catch {}
+}
+function markDone(btn, idx) {
+  let done = getProgress();
+  if (done.includes(idx)) done = done.filter(i => i !== idx);
+  else done.push(idx);
+  saveProgress(done);
+  renderProgress();
+}
+function renderProgress() {
+  const done = getProgress();
+  const pct = (done.length / TOTAL) * 100;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressLabel').textContent = done.length + ' / ' + TOTAL + ' módulos';
+
+  document.querySelectorAll('.btn-done').forEach(btn => {
+    const mod = btn.closest('[data-module]');
+    if (!mod) return;
+    const idx = parseInt(mod.dataset.module);
+    if (done.includes(idx)) {
+      btn.classList.add('done');
+      btn.textContent = '✓ Módulo dominado';
+    } else {
+      btn.classList.remove('done');
+      btn.textContent = '✓ Marcar módulo como dominado';
+    }
+  });
+
+  document.querySelectorAll('.nav-dots a').forEach(a => {
+    a.classList.toggle('completed', done.includes(parseInt(a.dataset.idx)));
+  });
+}
+
+/* Nav dots */
+(function buildNavDots() {
+  const dots = document.getElementById('navDots');
+  for (let i = 0; i < TOTAL; i++) {
+    const a = document.createElement('a');
+    a.href = '#mod-' + i;
+    a.textContent = i;
+    a.dataset.idx = i;
+    dots.appendChild(a);
+  }
+})();
+
+/* ============================================================
+   SCENARIO MATCHER
+   ============================================================ */
+const RECOMMENDATIONS = {
+  'prototype': {
+    title: '🟠 Inline o internal',
+    text: 'Para una prueba de 30 segundos, un <code>onclick</code> inline o un <code>&lt;script&gt;</code> al final del body son perfectamente válidos. Solo recuerda: <strong>esto no va a producción</strong>.'
+  },
+  'single-page': {
+    title: '🟢 Internal (con matices)',
+    text: 'Si es una sola página y el código es corto, un <code>&lt;script&gt;</code> al final del <code>&lt;body&gt;</code> es aceptable. Si supera ~50 líneas, empieza a plantearte un archivo externo.'
+  },
+  'multi-page': {
+    title: '🔵 External',
+    text: 'Necesitas un archivo <code>.js</code> externo. Se reutiliza, se cachea y evitas duplicar código en cada HTML. Enlaza con <code>&lt;script src="app.js" defer&gt;&lt;/script&gt;</code>.'
+  },
+  'team': {
+    title: '🔵 External + módulos ES',
+    text: 'En un proyecto real: archivo externo, idealmente con <code>type="module"</code> y varios archivos con <code>import</code>/<code>export</code>. Facilita el trabajo en equipo, el testing y el mantenimiento.'
+  },
+  'csp': {
+    title: '🔵 External (obligatorio)',
+    text: 'Si tu CSP bloquea scripts inline, las formas inline e internal <strong>no funcionarán</strong> salvo que uses <code>nonce</code> o <code>hash</code>. Lo correcto es un archivo externo.'
+  },
+  'modules': {
+    title: '🔵 External con <code>type="module"</code>',
+    text: '<code>&lt;script type="module" src="app.js"&gt;&lt;/script&gt;</code>. Los módulos tienen su propio scope, permiten <code>import</code>/<code>export</code> y por defecto se comportan como <code>defer</code>.'
+  }
+};
+
+document.getElementById('scenarioSelect').addEventListener('change', function() {
+  const rec = RECOMMENDATIONS[this.value];
+  const box = document.getElementById('recommendation');
+  if (!rec) { box.classList.add('hidden'); return; }
+  box.innerHTML = `<h4>${rec.title}</h4><p style="margin:0">${rec.text}</p>`;
+  box.classList.remove('hidden');
+});
+
+/* ============================================================
+   COMPARE DEMOS
+   ============================================================ */
+document.getElementById('compareInternal').addEventListener('click', function() {
+  alert('¡Hola desde INTERNAL! (asignando onclick desde un <script>)');
+});
+document.getElementById('compareExternal').addEventListener('click', function() {
+  const code = "alert('¡Hola desde EXTERNAL! (cargado dinámicamente desde un Blob, equivalente a <script src=\"app.js\">)');";
+  const blob = new Blob([code], { type: 'text/javascript' });
+  const s = document.createElement('script');
+  s.src = URL.createObjectURL(blob);
+  s.onload = () => URL.revokeObjectURL(s.src);
+  document.body.appendChild(s);
+});
+
+/* ============================================================
+   TIMELINE / GANTT
+   ============================================================ */
+const SCENARIOS = {
+  'head-blocking': {
+    total: 7,
+    phases: [
+      { track: 'html', start: 0, end: 2, label: 'HTML parsea' },
+      { track: 'html', start: 4, end: 7, label: 'HTML continúa', paused: false },
+      { track: 'download', start: 2, end: 4, label: '⬇️ Descarga (bloquea)' },
+      { track: 'execute', start: 4, end: 4.9, label: '⚙️ Ejecuta' }
+    ],
+    desc: '🔴 <strong>El navegador se congela</strong>: descarga y ejecuta el JS ANTES de continuar parseando el HTML. El usuario ve pantalla en blanco hasta el final. Tiempo total: 7 unidades.'
+  },
+  'body-end': {
+    total: 7,
+    phases: [
+      { track: 'html', start: 0, end: 4, label: 'HTML parsea' },
+      { track: 'download', start: 4, end: 6, label: '⬇️ Descarga' },
+      { track: 'execute', start: 6, end: 6.9, label: '⚙️ Ejecuta' }
+    ],
+    desc: '🟢 <strong>El usuario ve la página antes</strong> de que el JS se ejecute: el HTML se parsea completo y luego se carga el script. Tiempo total: 7 unidades, pero percepción de carga mucho mejor.'
+  },
+  'head-defer': {
+    total: 6,
+    phases: [
+      { track: 'html', start: 0, end: 4.5, label: 'HTML parsea' },
+      { track: 'download', start: 1, end: 3, label: '⬇️ Descarga paralela' },
+      { track: 'execute', start: 4.5, end: 5.7, label: '⚙️ Ejecuta (al final)' }
+    ],
+    desc: '🟢 <strong>La mejor opción general</strong>: el script se descarga en paralelo sin bloquear, y se ejecuta justo después de que el HTML termine de parsearse. Respeta el orden de los scripts. Tiempo total: ~5.7 unidades.'
+  },
+  'head-async': {
+    total: 6,
+    phases: [
+      { track: 'html', start: 0, end: 3, label: 'HTML parsea' },
+      { track: 'html', start: 4.5, end: 6, label: 'HTML continúa' },
+      { track: 'download', start: 1, end: 3, label: '⬇️ Descarga paralela' },
+      { track: 'execute', start: 3, end: 4.5, label: '⚙️ Ejecuta (interrumpe HTML)' }
+    ],
+    desc: '🟡 <strong>Rápido pero impredecible</strong>: se descarga en paralelo y se ejecuta en cuanto está listo, interrumpiendo el parsing. El orden de varios scripts async no está garantizado. Útil para widgets independientes (analytics, ads). Tiempo total: ~6 unidades.'
+  }
+};
+
+function renderGantt(name) {
+  const s = SCENARIOS[name];
+  const gantt = document.getElementById('gantt');
+  gantt.innerHTML = '';
+
+  const labels = { html: 'HTML', download: 'Descarga JS', execute: 'Ejecución JS' };
+  ['html', 'download', 'execute'].forEach(track => {
+    const row = document.createElement('div');
+    row.className = 'gantt-row';
+    const label = document.createElement('div');
+    label.className = 'gantt-label';
+    label.textContent = labels[track];
+    row.appendChild(label);
+
+    const bar = document.createElement('div');
+    bar.className = 'gantt-bar';
+    s.phases.filter(p => p.track === track).forEach((p, i) => {
+      const block = document.createElement('div');
+      block.className = 'gantt-block ' + track;
+      block.style.left = (p.start / s.total * 100) + '%';
+      block.style.width = ((p.end - p.start) / s.total * 100) + '%';
+      block.style.animationDelay = (i * 0.15) + 's';
+      block.textContent = p.label;
+      bar.appendChild(block);
+    });
+
+    row.appendChild(bar);
+    gantt.appendChild(row);
+  });
+
+  document.getElementById('ganttDesc').innerHTML = s.desc;
+}
+
+document.querySelectorAll('.timeline-tab').forEach(tab => {
+  tab.addEventListener('click', function() {
+    document.querySelectorAll('.timeline-tab').forEach(t => t.classList.remove('active'));
+    this.classList.add('active');
+    renderGantt(this.dataset.scenario);
+  });
+});
+
+/* ============================================================
+   SANDBOX
+   ============================================================ */
+function runSandbox() {
+  const code = document.getElementById('sandboxCode').value;
+  document.getElementById('sandboxIframe').srcdoc = code;
+}
+// Ejecutar al cargar
+window.addEventListener('DOMContentLoaded', () => {
+  renderGantt('head-blocking');
+  setTimeout(runSandbox, 100);
+});
+
+/* ============================================================
+   QUIZ
+   ============================================================ */
+const QUIZ = [
+  {
+    q: '¿Cuál es la forma MÁS recomendada para incluir JS en una web real?',
+    opts: ['Inline con onclick', 'Internal con &lt;script&gt; en el head', 'External con &lt;script src="..." defer&gt;', 'Cargar el JS desde un data URL'],
+    correct: 2,
+    why: 'External + defer: se cachea, se reutiliza, se descarga en paralelo y se ejecuta en orden tras parsear el HTML.'
+  },
+  {
+    q: '¿Qué hace el atributo defer?',
+    opts: ['Bloquea el parsing hasta que el script se ejecute', 'Descarga en paralelo y ejecuta al terminar de parsear el HTML, respetando el orden', 'Descarga en paralelo y ejecuta en cuanto esté listo', 'Impide que el script se ejecute'],
+    correct: 1,
+    why: 'defer = descarga paralela + ejecución post-parsing + orden garantizado.'
+  },
+  {
+    q: '¿Qué hace el atributo async?',
+    opts: ['Descarga en paralelo y ejecuta al terminar de parsear el HTML', 'Descarga en paralelo y ejecuta en cuanto esté listo, interrumpiendo el parsing, sin garantizar orden', 'Bloquea toda la página', 'Solo funciona en el body'],
+    correct: 1,
+    why: 'async prioriza velocidad sobre orden: ejecuta en cuanto puede, pausando el parsing si es necesario.'
+  },
+  {
+    q: '¿Dónde se recomienda poner un &lt;script src="app.js"&gt; SIN defer ni async?',
+    opts: ['En el &lt;head&gt;', 'Justo después de &lt;body&gt;', 'Al final del &lt;body&gt;', 'Dentro de un &lt;div&gt;'],
+    correct: 2,
+    why: 'Al final del body: cuando el script se ejecuta, todo el DOM ya está disponible.'
+  },
+  {
+    q: '¿Por qué el JS inline (onclick="...") es considerado mala práctica?',
+    opts: ['Porque no funciona en navegadores modernos', 'Porque mezcla estructura y lógica, no se reutiliza, no se cachea y la CSP puede bloquearlo', 'Porque es más lento que un archivo externo', 'Porque no permite ejecutar alert()'],
+    correct: 1,
+    why: 'El inline rompe la separación de responsabilidades y no es compatible con buenas prácticas de producción.'
+  },
+  {
+    q: '¿Qué ocurre con &lt;script src="app.js"&gt;alert("hola")&lt;/script&gt;?',
+    opts: ['Se ejecuta el alert y luego app.js', 'Se ejecuta solo app.js; el alert interno se ignora', 'Se ejecuta el alert y app.js no se carga', 'Da error de sintaxis'],
+    correct: 1,
+    why: 'Cuando un &lt;script&gt; tiene src, su contenido interno se descarta. Solo se carga el archivo externo.'
+  },
+  {
+    q: '¿Cuándo usarías &lt;script type="module"&gt;?',
+    opts: ['Solo para scripts muy pequeños', 'Cuando necesitas import/export y comportamiento de módulos ES', 'Cuando quieres bloquear el parsing', 'Cuando no quieres usar defer'],
+    correct: 1,
+    why: 'type="module" habilita módulos ES (import/export), scope propio y, por defecto, comportamiento similar a defer.'
+  },
+  {
+    q: 'Pones &lt;script&gt; en el &lt;head&gt; que hace document.getElementById("x") y el elemento está en el body. ¿Qué pasa?',
+    opts: ['Funciona sin problema', 'Devuelve null y, al operar sobre él, lanza TypeError', 'Se crea automáticamente el elemento', 'Se ignora silenciosamente'],
+    correct: 1,
+    why: 'El elemento aún no existe en el DOM. getElementById devuelve null; cualquier propiedad sobre null lanza TypeError.'
+  }
+];
+
+let quizAnswered = 0;
+let quizCorrect = 0;
+
+(function renderQuiz() {
+  const container = document.getElementById('quizContainer');
+  QUIZ.forEach((item, i) => {
+    const div = document.createElement('div');
+    div.className = 'quiz-q';
+    div.innerHTML = `
+      <div class="q-text">${i + 1}. ${item.q}</div>
+      <div class="opts"></div>
+      <div class="quiz-feedback"></div>
+    `;
+    const optsDiv = div.querySelector('.opts');
+    item.opts.forEach((opt, j) => {
+      const b = document.createElement('button');
+      b.className = 'quiz-opt';
+      b.innerHTML = opt;
+      b.addEventListener('click', () => {
+        if (div.dataset.answered) return;
+        div.dataset.answered = '1';
+        quizAnswered++;
+        const feedback = div.querySelector('.quiz-feedback');
+        optsDiv.querySelectorAll('button').forEach(x => x.disabled = true);
+        if (j === item.correct) {
+          b.classList.add('correct');
+          quizCorrect++;
+          feedback.className = 'quiz-feedback ok show';
+          feedback.innerHTML = '✅ ¡Correcto! ' + item.why;
+        } else {
+          b.classList.add('wrong');
+          optsDiv.querySelectorAll('button')[item.correct].classList.add('correct');
+          feedback.className = 'quiz-feedback ko show';
+          feedback.innerHTML = '❌ Incorrecto. ' + item.why;
+        }
+        updateQuizScore();
+      });
+      optsDiv.appendChild(b);
+    });
+    container.appendChild(div);
+  });
+})();
+
+function updateQuizScore() {
+  const el = document.getElementById('quizScore');
+  if (quizAnswered === 0) { el.textContent = ''; return; }
+  el.textContent = `Aciertos: ${quizCorrect} / ${QUIZ.length} (respondidas: ${quizAnswered}/${QUIZ.length})`;
+  if (quizAnswered === QUIZ.length) {
+    if (quizCorrect === QUIZ.length) {
+      el.textContent += ' 🏆 ¡Perfecto! Dominas el tema.';
+      el.style.color = 'var(--success)';
+    } else if (quizCorrect >= QUIZ.length * 0.7) {
+      el.textContent += ' 💪 Muy bien. Repasa los fallos.';
+      el.style.color = 'var(--primary)';
+    } else {
+      el.textContent += ' 📚 Repasa los módulos 2, 3, 4 y 6.';
+      el.style.color = 'var(--error)';
+    }
+  }
+}
+
+/* ============================================================
+   FEYNMAN WORD COUNTER
+   ============================================================ */
+const feyn = document.getElementById('feynmanText');
+const wc = document.getElementById('wordCount');
+feyn.addEventListener('input', () => {
+  const words = feyn.value.trim().split(/\s+/).filter(Boolean).length;
+  wc.textContent = words + ' palabras' + (words < 50 ? ' (¡intenta llegar a 50+)' : ' ✓');
+  wc.style.color = words >= 50 ? 'var(--success)' : 'var(--muted)';
+});
+
+/* ============================================================
+   INIT
+   ============================================================ */
+renderProgress();
+</script>
+</body>
+</html>
